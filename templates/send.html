@@ -1,19 +1,18 @@
 <html>
 <head>
     <title>Message Sender</title>
-    <link rel="stylesheet" href="https://msgr.gabrielzv1233.repl.co/css">
 </head>
-  <body style="margin:0px;">
+  <body style="margin:0px;overflow:hidden;">
 <center>
-    <h1>Message Sender</h1>
+    <h1 style="margin-bottom:3px;">Message Sender</h1>
     <form action="/send" method="POST" onsubmit="saveUsername()">
         <label for="username"><b>Username:</b></label><br>
         <input style="text-align:center;" type="text" maxlength="27" class="tb" id="username" name="user" required><br>
         
         <label for="message"><b>Message:</b></label>
-        <input autocomplete="off" type="text" id="message" name="msg" class="tb" style="width:100%;" autofocus required><br>
+        <input autocomplete="off" type="text" id="message" name="msg" class="tb" style="width:99%;" autofocus required><br>
         
-        <input style="border-radius: 10px;width:10vw;background-color:#0053A6;color:#F5F9FC;" type="submit" value="Send" onclick="removeUnloadEvent()">
+        <input style="border-radius:10px;width:10vw;background-color:#0053A6;color:#F5F9FC;" type="submit" value="Send" onclick="removeUnloadEvent()">
     </form>
 </center>
     <script>
