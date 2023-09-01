@@ -80,5 +80,8 @@ def get_raw_messages():
 def serve_image():
     filename = 'templates/favicon.png'
     return send_file(filename, mimetype='image/png')
+@app.route('/css')
+def css():
+    return send_file('templates/style.css', mimetype='text/css')
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

@@ -3,6 +3,7 @@
     <title>
       msgr
     </title>
+    <link rel="stylesheet" href="https://msgr.gabrielzv1233.repl.co/css">
     <style>
       #content {
         word-wrap: break-word;
@@ -21,7 +22,7 @@
   <body style="margin: 0; padding: 0;">
     <div id="rulesandinfo"><b><h3>Hi welcome to the chatroom, if you need to have a message you need deleted, please contact me</h3></b></div>
     <!-- here is the element for the messages -->
-    <div id="content">{{ messages|safe }}</div>
+    <div style="margin-left:3px;" id="content">{{ messages|safe }}</div>
     <script>
       function reloadPage() {
        location.reload();
