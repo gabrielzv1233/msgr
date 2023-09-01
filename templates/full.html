@@ -1,0 +1,42 @@
+<html>
+  <head>
+    <title>
+      msgr
+    </title>
+    <style>
+      #content {
+        word-wrap: break-word;
+      }
+      #reloadButton {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+}
+      #rulesandinfo {
+        color:#301934;
+      }
+    </style>
+  </head>
+    <span style="color:blue;font-size:70%;"><button id="reloadButton" onclick="reloadPage()">--- Manual reload ---</button><center><p id="reloadButton"style="margin-top:20px;">(auto reloads every second)</p></center></span>
+  <body style="margin: 0; padding: 0;">
+    <div id="rulesandinfo"><b><h3>Hi welcome to the chatroom, if you need to have a message you need deleted, please contact me</h3></b></div>
+    <!-- here is the element for the messages -->
+    <div id="content">{{ messages|safe }}</div>
+    <script>
+      function reloadPage() {
+       location.reload();
+}
+    </script>
+    <body onload="scrollPage()">
+<script>function scrollPage() {
+  window.scrollTo(0, document.body.scrollHeight);
+}</script>
+      <script>
+        window.onload = function() {
+            setInterval(function() {
+                location.reload();
+            }, 1000); // 1000 milliseconds = 1 second
+        };
+    </script>
+  </body>
+</html>
