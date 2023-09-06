@@ -6,6 +6,11 @@ from html import escape
 
 app = Flask(__name__)
 
+#Route for the 404 error page
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
 @app.route('/')
 def serve_html():
     return render_template('index.html')
@@ -26,7 +31,7 @@ def receive_message():
 
         if response.status_code == 200:
             with open('messages.txt', 'a') as file:
-                file.write(f'<b>{user}</b> <i>@{server_time}</i>: {message}<br>\n')
+                file.write(f'<b>{user}</b> <i>@{server_time}/i>: {message}<br>\n')
             return render_template('message_sent.html')
         else:
             return 'Failed to send the message.'
