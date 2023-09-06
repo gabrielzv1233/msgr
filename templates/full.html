@@ -13,6 +13,8 @@
                     dataType: "text",
                     success: function(data) {
                         $("#messages").html(data);
+                        window.scrollTo(0, document.body.scrollHeight);
+
                     }
                 });
             }
