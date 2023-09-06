@@ -17,11 +17,11 @@
 </head>
 <body style="margin:0px;overflow: hidden;">
 <iframe src="/full" style="width:100vw;height:84vh;outline: none;box-shadow: none;"></iframe>
-<iframe id="myIframe" src="/send.html" style="width:100vw;height:16vh;outline: none;box-shadow: none;"></iframe>
+<iframe id="send" src="/send.html" style="width:100vw;height:16vh;outline: none;box-shadow: none;" ></iframe>
 
 <script>
     window.addEventListener('beforeunload', function() {
-        var iframeWindow = document.getElementById('myIframe').contentWindow;
+        var iframeWindow = document.getElementById('send').contentWindow;
         iframeWindow.postMessage('saveUsername', '*');
     });
 </script>
