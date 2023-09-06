@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "python-template"
-version = "0.1.0"
-description = ""
+name = "msgr"
+version = "1.1.0"
+description = "a simple messaging platform with an API"
 authors = ["gabrielzv1233"]
 
 [tool.poetry.dependencies]

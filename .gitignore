@@ -1,2 +1,6 @@
 messages.txt
 .prettierignore
+.breakpoints
+.replit
+replit.nix
+.pythonlibs/
