@@ -31,7 +31,7 @@ def receive_message():
 
         if response.status_code == 200:
             with open('messages.txt', 'a') as file:
-                file.write(f'<b>{user}</b> <i>@{server_time}/i>: {message}<br>\n')
+                file.write(f'<b>{user}</b> <i>@{server_time}</i>: {message}<br>\n')
             return render_template('message_sent.html')
         else:
             return 'Failed to send the message.'
