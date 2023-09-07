@@ -36,7 +36,7 @@ def receive_message():
     if response.status_code == 200:
       with open('messages.txt', 'a') as file:
         file.write(
-            f'<b>{user}</b> <i>@<u>{server_time}</u></i>: {message}<br>\n')
+            f'<b>{user}</b> <i>@<u title="Time is shown in GMT+5 (24h format)">{server_time}</u></i>: {message}<br>\n')
       return render_template('message_sent.html')
     else:
       return 'Failed to send the message.'
@@ -58,7 +58,7 @@ def send_message_query():
   server_time = datetime.datetime.now().strftime("%H:%M")
 
   with open('messages.txt', 'a') as file:
-    file.write(f'<b>{user}</b> <i>@<u>{server_time}</u></i>: {message}<br>\n')
+    file.write(f'<b>{user}</b> <i>@<u title="Time is shown in GMT+5 (24h format)">{server_time}</u></i>: {message}<br>\n')
 
   return 'Message sent successfully.'
 
