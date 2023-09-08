@@ -29,22 +29,34 @@
         });
     </script>
     <style>
-        #rulesandinfo {
-            color: #A18A1A;
-        }
-
         body {
             background-color: #1C2333;
+            overflow-x:wrap;
         }
 
         #messages {
             color: #F5F9FC;
+            word-break:break-all;
+        }
+        #TimeWarning {
+          color:#ff0000;
+        }
+        h3, h4, #TimeWarning, #HowToDeleteMessages {
+        }
+        .TW {
+          color:red;
+          font-weight:bold;
+        }
+        .HTDM {
+          color: #A18A1A;
+          font-size:1.17em;
+          font-weight:bolder;
         }
     </style>
 </head>
 <body>
 <center>
-    <div id="rulesandinfo"><b><h3>Hi welcome to the chatroom, if you need to have a message you need deleted, please contact me</h3></b></div>
+  <b class="HTDM">Hi welcome to the chatroom, if you need to have a message you need deleted, please contact me</b><br><b class="TW">Time is shown as the time of the server</b>
 </center>
 <div id="messages"></div>
 </body>
