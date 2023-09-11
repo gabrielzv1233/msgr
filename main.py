@@ -4,7 +4,8 @@ import datetime
 import os
 from html import escape
 import json
-from filters import block
+import settings
+import bans
 
 app = Flask(__name__)
 
@@ -12,6 +13,14 @@ app = Flask(__name__)
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def Server_died_oof():
+    return render_template('500.html'), 500
+
+@app.route('/500.html')
+def error_500():
+    return render_template('500.html')
 
 @app.route('/')
 def serve_html():
@@ -22,16 +31,20 @@ def receive_message():
     if request.method == 'POST':
         user = escape(request.form.get('user'))
         message = escape(request.form.get('msg'))
+        client_ip = request.headers.get('X-Forwarded-For')
+
+        if client_ip in bans.BANNED_IPS:
+            return 'You have been IP banned.'
 
         if not user or not message:
             return redirect(url_for('send'))
 
-        # Apply chat filtering to username and message
-        for word in block:
+        # Apply case-insensitive chat filtering to username and message
+        for word in settings.block:
             if word.lower() in user.lower():
-                user = user.replace(word, block[word])
+                user = user.replace(word, settings.block[word])
             if word.lower() in message.lower():
-                message = message.replace(word, block[word])
+                message = message.replace(word, settings.block[word])
 
         server_time = datetime.datetime.now().strftime("%H:%M")
         url = f"https://msgr.gabrielzv1233.repl.co/send?user={user}&msg={message}&time={server_time}"
@@ -41,6 +54,7 @@ def receive_message():
         if response.status_code == 200:
             with open('messages.txt', 'a') as file:
                 file.write(f'<b>{user}</b> <i>@<u>{server_time}</u></i>: {message}<br>\n')
+            print(f"New message sent by user {user} (IP: {client_ip})")
             return render_template('message_sent.html')
         else:
             return 'Failed to send the message.'
@@ -51,6 +65,7 @@ def receive_message():
 def send_message_query():
     user = request.args.get('user')
     message = request.args.get('msg')
+    client_ip = request.headers.get('X-Forwarded-For')
 
     if not user or not message:
         return 'Invalid request.<br> make sure both username and message fields have a non-space character'
@@ -58,18 +73,19 @@ def send_message_query():
     user = escape(user)
     message = escape(message)
 
-    # Apply chat filtering to username and message
-    for word in block:
+    # Apply case-insensitive chat filtering to username and message
+    for word in settings.block:
         if word.lower() in user.lower():
-            user = user.replace(word, block[word])
+            user = user.replace(word, settings.block[word])
         if word.lower() in message.lower():
-            message = message.replace(word, block[word])
+            message = message.replace(word, settings.block[word])
 
     server_time = datetime.datetime.now().strftime("%H:%M")
 
     with open('messages.txt', 'a') as file:
         file.write(f'<b>{user}</b> <i>@<u>{server_time}</u></i>: {message}<br>\n')
 
+    print(f"New message sent by user {user} (IP: {client_ip})")
     return 'Message sent successfully.'
 
 @app.route('/full', methods=['GET'])
@@ -108,7 +124,7 @@ def serve_image():
 
 @app.route('/chatfilter')
 def serve_filter():
-    return send_file('filters.py', mimetype='text/plain')
+    return send_file('settings.py', mimetype='text/plain')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

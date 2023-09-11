@@ -4,5 +4,8 @@ block = {
     "nigger": "n***er",
     "cunt": "c**t",
     "cock": "pp",
-    "penis": "pp"
+    "penis": "pp",
+    "NIGGER": "N***ER",
+    "✓": "",
+    "kys": "your a nice person i wish i was you"
 }
