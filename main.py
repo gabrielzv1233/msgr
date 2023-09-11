@@ -97,10 +97,10 @@ def get_raw_messages():
   return send_file('messages.txt', mimetype='text/plain')
 
 
-@app.route('/favicon')
+@app.route('/favicon.png')
 def serve_image():
-  filename = 'templates/favicon.png'
-  return send_file(filename, mimetype='image/png')
+    faviconimg = 'templates/favicon.png'
+    return send_file(faviconimg, mimetype='image/png')
 
 
 if __name__ == '__main__':
