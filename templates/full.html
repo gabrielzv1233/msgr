@@ -5,11 +5,6 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function() {
-            // Variables to track toggles
-            var autoUpdateEnabled = true;
-            var autoScrollEnabled = true;
-            var updateInterval;
-
             // Function to fetch and update the messages
             function updateMessages() {
                 $.ajax({
@@ -18,108 +13,72 @@
                     dataType: "text",
                     success: function(data) {
                         $("#messages").html(data);
-                        // Scroll to bottom if auto-scrolling is enabled
-                        if (autoScrollEnabled) {
-                            window.scrollTo(0, document.body.scrollHeight);
-                        }
+                      // Scroll to bottom
+                        window.scrollTo(0, document.body.scrollHeight);
                     }
                 });
-            }
-
-            // Function to toggle auto-update
-            function toggleAutoUpdate() {
-                autoUpdateEnabled = !autoUpdateEnabled;
-                $("#toggleAutoUpdate").attr("title", "Auto-Update: " + (autoUpdateEnabled ? "Enabled" : "Disabled"));
-
-                // Change background color of the toggleAutoUpdate button based on auto-update state
-                if (autoUpdateEnabled) {
-                    $("#toggleAutoUpdate").css("background-color", "green");
-                } else {
-                    $("#toggleAutoUpdate").css("background-color", "red");
-                }
-            }
-
-            // Function to toggle auto-scrolling
-            function toggleAutoScroll() {
-                autoScrollEnabled = !autoScrollEnabled;
-                $("#toggleAutoScroll").attr("title", "Auto-Scroll: " + (autoScrollEnabled ? "Enabled" : "Disabled"));
             }
 
             // Update messages initially
             updateMessages();
 
-            // Attach event handlers to toggles
-            $("#toggleAutoUpdate").click(toggleAutoUpdate);
-            $("#toggleAutoScroll").click(toggleAutoScroll);
-
-            // Set initial toggle colors
-            $("#toggleAutoUpdate").css("background-color", "green");
-            $("#toggleAutoScroll").css("background-color", "green");
+            // Set interval to update messages every 1 second
+            setInterval(function() {
+                updateMessages();
+            }, 1000);
         });
     </script>
     <style>
         body {
             background-color: #1C2333;
-            overflow-x: wrap;
+            overflow-x:wrap;
         }
 
         #messages {
-            margin-top: 6.17em;
+            margin-top:6.17em;
             color: #F5F9FC;
-            word-break: break-all;
+            word-break:break-all;
         }
-
         #TimeWarning {
-            color: #ff0000;
+          color:#ff0000;
         }
-
         h3, h4, #TimeWarning, #HowToDeleteMessages {
         }
-
         .TW {
-            color: red;
-            font-weight: bold;
+          color:red;
+          font-weight:bold;
         }
-
         .HTDM {
-            color: #A18A1A;
-            font-size: 1.17em;
-            font-weight: bolder;
+          color: #A18A1A;
+          font-size:1.17em;
+          font-weight:bolder;
         }
-
         .info {
-            background-color: #3C445C;
-            color: #CCD1D9;
-            font-weight: bold;
-            border-radius: 5px;
+          background-color: #3C445C;
+          color: #CCD1D9;
+          font-weight: bold;
+          border-radius:5px;
         }
-
         header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background-color: #1C2333;
-            z-index: 9999;
-            margin-bottom: 0px;
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          background-color: #1C2333;
+          z-index: 9999;
+          margin-bottom:0px;
         }
-
         a {
-            color: blue
+          color:blue
         }
     </style>
 </head>
 <body>
 <center>
-  <header>
-    <b class="HTDM">Hi welcome to the chatroom, if you need to have a message you need deleted, please contact me</b><br>
-    <u style="color:white;">if the owner sent a message it than the username would look like this:</u> 
-    <b style="color:gold;">gabrielzv1233 &#x2713;</b><br>
-    <b class="TW">Time is shown as the time of the server</b><br>
-    <button id="toggleAutoUpdate" class="toggle-button" title="Auto-Update: Enabled">Toggle Auto-Update</button>
-    <button class="info" onclick="window.open('/info', '_blank');">Info Page</button>
-    <button id="toggleAutoScroll" class="toggle-button" title="Auto-Scroll: Enabled">Toggle Auto-Scroll</button>
-  </header>
+  <header><b class="HTDM">Hi welcome to the chatroom, if you need to have a message you need deleted, please contact me</b><br>
+<u style="color:white;">if the owner sent a message it than the username would look like this:</u> <b style="color:gold;">gabrielzv1233 &#x2713;</b><br>
+<b class="TW">Time is shown as the time of the server</b><br>
+<button class="info" onclick="window.open('/info', '_blank');">Info Page</button></header>
 </center>
 <div id="messages"></div>
 </body>
