@@ -3,5 +3,7 @@ block = {
     "nigg": "n**g",
     "nigga": "n***a",
     "nigger": "n***er",
-    "cunt": "c**t"
+    "cunt": "c**t",
+    "cock": "pp",
+    "penis": "pp"
 }

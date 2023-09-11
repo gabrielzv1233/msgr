@@ -1,21 +1,21 @@
-<b>...</b> <i>@<u>11:11</u></i>:  <br>
-<b>mm</b> <i>@<u>11:28</u></i>: Olha<br>
-<b>we</b> <i>@<u>11:41</u></i>: errer<br>
-<b>we</b> <i>@<u>11:41</u></i>: fgdgdf<br>
+<!-- mods/owners have style="color:gold;" username and a checkmark (&#x2713;) these need to be added manually as of now -->
+<!-- owner gabrielzv1233 will have a username:
+<b style="color:gold;">gabrielzv1233 &#x2713;</b> 
+-->
 <b>we</b> <i>@<u>11:41</u></i>: hiii<br>
 <b>gunner</b> <i>@<u>12:31</u></i>: you like men<br>
-<b>nigg</b> <i>@<u>12:46</u></i>: im bombing new york<br>
+<b>n**g</b> <i>@<u>12:46</u></i>: im bombing new york<br>
 <b>booty</b> <i>@<u>12:54</u></i>: n<br>
 <b>UrDad</b> <i>@<u>13:19</u></i>: Hehe Haha<br>
 <b>AUTISM BOY</b> <i>@<u>13:20</u></i>: I&#x27;m a superhero<br>
 <b>sdf</b> <i>@<u>13:20</u></i>: hu<br>
 <b>UrDad</b> <i>@<u>13:21</u></i>: nevermind I&#x27;m leaving.<br>
 <b>AUTISM BOY</b> <i>@<u>13:21</u></i>: i like twinkies<br>
-<b>UrDad</b> <i>@<u>13:21</u></i>: I HATE NIGGERs<br>
+<b>UrDad</b> <i>@<u>13:21</u></i>: I HATE N****Rs<br>
 <b>AUTISM BOY</b> <i>@<u>13:21</u></i>: what about the zingers?<br>
 <b>Big c**k</b> <i>@<u>13:42</u></i>: Suck it<br>
 <b>dddd</b> <i>@<u>13:42</u></i>: hi<br>
-<b>Big cock</b> <i>@<u>13:43</u></i>: hiya<br>
+<b>Big c**k</b> <i>@<u>13:43</u></i>: hiya<br>
 <b>removed advertisment</b><br>
 <b>GOD-LEE</b> <i>@<u>14:22</u></i>: hello?<br>
 <b>GOD-LEE</b> <i>@<u>14:22</u></i>: is anyone here?<br>
@@ -23,3 +23,8 @@
 <b>rah</b> <i>@<u>14:29</u></i>: im leaving never mind...<br>
 <b>rah</b> <i>@<u>14:29</u></i>: REMEMBER MEE!!<br>
 <b>papi</b> <i>@<u>14:30</u></i>: sup guys<br>
+<b style="color:gold;">gabrielzv1233 &#x2713;</b> <i>@<u>14:43</u></i>: hello<br><b>elijah </b> <i>@<u>15:01</u></i>: hiii<br>
+<b>elijah </b> <i>@<u>15:01</u></i>: hiii<br>
+<b>elijah</b> <i>@<u>15:01</u></i>: what the hell going on lol<br>
+<b style="color:gold;">gabrielzv1233 &#x2713;</b>  <i>@<u>15:04</u></i>: I don&#x27;t know <br>
+<b style="color:gold;">gabrielzv1233 &#x2713;</b>  <i>@<u>15:05</u></i>: I just wanted ppl to try my program<br>

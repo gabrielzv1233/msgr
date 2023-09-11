@@ -35,6 +35,7 @@
         }
 
         #messages {
+            margin-top:7.17em;
             color: #F5F9FC;
             word-break:break-all;
         }
@@ -58,12 +59,22 @@
           font-weight: bold;
           border-radius:5px;
         }
+        header {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          background-color: #1C2333;
+          padding: 20px;
+          z-index: 9999;
+          margin-bottom:0px;
+        }
     </style>
 </head>
 <body>
 <center>
-  <b class="HTDM">Hi welcome to the chatroom, if you need to have a message you need deleted, please contact me</b><br><b class="TW">Time is shown as the time of the server</b><br>
-<button class="info" onclick="window.open('/info', '_blank');">Info Page</button>
+  <header><b class="HTDM">Hi welcome to the chatroom, if you need to have a message you need deleted, please contact me</b><br><b class="TW">Time is shown as the time of the server</b><br>
+<button class="info" onclick="window.open('/info', '_blank');">Info Page</button></header>
 </center>
 <div id="messages"></div>
 </body>
