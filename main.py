@@ -6,6 +6,7 @@ from html import escape
 import json
 import settings
 import bans
+import re
 
 app = Flask(__name__)
 
@@ -41,10 +42,11 @@ def receive_message():
 
         # Apply case-insensitive chat filtering to username and message
         for word in settings.block:
-            if word.lower() in user.lower():
-                user = user.replace(word, settings.block[word])
-            if word.lower() in message.lower():
-                message = message.replace(word, settings.block[word])
+            pattern = re.compile(re.escape(word), re.IGNORECASE)
+            if pattern.search(user):
+                user = pattern.sub(settings.block[word], user)
+            if pattern.search(message):
+                message = pattern.sub(settings.block[word], message)
 
         server_time = datetime.datetime.now().strftime("%H:%M")
         url = f"https://msgr.gabrielzv1233.repl.co/send?user={user}&msg={message}&time={server_time}"
@@ -75,10 +77,11 @@ def send_message_query():
 
     # Apply case-insensitive chat filtering to username and message
     for word in settings.block:
-        if word.lower() in user.lower():
-            user = user.replace(word, settings.block[word])
-        if word.lower() in message.lower():
-            message = message.replace(word, settings.block[word])
+        pattern = re.compile(re.escape(word), re.IGNORECASE)
+        if pattern.search(user):
+            user = pattern.sub(settings.block[word], user)
+        if pattern.search(message):
+            message = pattern.sub(settings.block[word], message)
 
     server_time = datetime.datetime.now().strftime("%H:%M")
 
