@@ -1,0 +1,1 @@
+simply just download the templates folder and main.py to a flask app and run main.py its that easy!! all other files will be created automatically

@@ -8,6 +8,34 @@ import settings
 import bans
 import re
 
+#add files if needed
+files = {
+    "bans.py": 'BANNED_IPS = {\n    "BannedPersonsIpHere": "example"\n}',
+    "messages.txt": "",
+    "message_log.txt": '',
+    "settings.py": '''block = {
+    "fuck": "f**k",
+    "nigga": "n***a",
+    "nigger": "n***er",
+    "cunt": "c**t",
+    "cock": "pp",
+    "penis": "pp",
+    "✓": "",
+    "kys": "your a nice person i wish i was you",
+    "niggger": "n****er"
+}
+
+loggable_words = ["nigger", "nigga", "niggger"]'''
+}
+for filename, content in files.items():
+    if not os.path.exists(filename):
+        with open(filename, 'w') as file:
+            file.write(content)
+        print(f"Created file: {filename}")
+    else:
+        print(f"File already exists: {filename}, skipping")
+print()
+
 app = Flask(__name__)
 
 # Route for the 404 error page
@@ -108,10 +136,7 @@ def send_message_query():
     return 'Failed, sending API is disabled as it is to hard to keep censorship and automatic moderation up to date'
 @app.route('/full', methods=['GET'])
 def display_messages():
-    if not os.path.exists('messages.txt'):
-        with open('messages.txt', 'w') as file:
-            pass
-    elif os.stat('messages.txt').st_size == 0:
+    if os.stat('messages.txt').st_size == 0:
         pass
 
     with open('messages.txt', 'r') as file:

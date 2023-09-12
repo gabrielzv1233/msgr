@@ -7,7 +7,7 @@ block = {
     "penis": "pp",
     "✓": "",
     "kys": "your a nice person i wish i was you",
-    "niggger": "n****r"
+    "niggger": "n****er"
 }
 
-loggable_words = ["nigger", "nigga", "niggger", "fuck"]
+loggable_words = ["nigger", "nigga", "niggger"]
