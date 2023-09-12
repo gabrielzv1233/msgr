@@ -27,6 +27,16 @@ def error_500():
 def serve_html():
     return render_template('index.html')
 
+# Log loggable messages (ex messages with the N-word)
+# Create a logger function
+def log_message(ip, user, time, message):
+    for word in settings.loggable_words:
+        if word.lower() in message.lower():
+            log_entry = f"[{ip}] {user} @ {time}: {message}\n"
+            with open('message_log.txt', 'a') as file:
+                file.write(log_entry)
+            break
+
 @app.route('/send', methods=['GET', 'POST'])
 def receive_message():
     if request.method == 'POST':
@@ -40,15 +50,18 @@ def receive_message():
         if not user or not message:
             return redirect(url_for('send'))
 
+        server_time = datetime.datetime.now().strftime("%H:%M")
+        
+        # Call the log_message function before applying the chat filter
+        log_message(client_ip, user, server_time, message)
+
         # Apply case-insensitive chat filtering to username and message
         for word in settings.block:
-            pattern = re.compile(re.escape(word), re.IGNORECASE)
-            if pattern.search(user):
-                user = pattern.sub(settings.block[word], user)
-            if pattern.search(message):
-                message = pattern.sub(settings.block[word], message)
+            if word.lower() in user.lower():
+                user = user.replace(word, settings.block[word])
+            if word.lower() in message.lower():
+                message = message.replace(word, settings.block[word])
 
-        server_time = datetime.datetime.now().strftime("%H:%M")
         url = f"https://msgr.gabrielzv1233.repl.co/send?user={user}&msg={message}&time={server_time}"
 
         response = requests.get(url)
@@ -63,6 +76,7 @@ def receive_message():
 
     return redirect(url_for('send'))
 
+# feature removed bc im not maintaining it
 @app.route('/api/send', methods=['GET'])
 def send_message_query():
     user = request.args.get('user')
@@ -86,11 +100,11 @@ def send_message_query():
     server_time = datetime.datetime.now().strftime("%H:%M")
 
     with open('messages.txt', 'a') as file:
-        file.write(f'<b>{user}</b> <i>@<u>{server_time}</u></i>: {message}<br>\n')
+         #file.write(f'<b>{user}</b> <i>@<u>{server_time}</u></i>: {message}<br>\n')
 
-    print(f"New message sent by user {user} (IP: {client_ip})")
-    return 'Message sent successfully.'
-
+      print(f"New message sent by user {user} (IP: {client_ip})")
+    #return 'Message sent successfully.'
+    return 'Failed, sending API is disabled as it is to hard to keep censorship and automatic moderation up to date'
 @app.route('/full', methods=['GET'])
 def display_messages():
     if not os.path.exists('messages.txt'):

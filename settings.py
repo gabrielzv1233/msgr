@@ -5,7 +5,9 @@ block = {
     "cunt": "c**t",
     "cock": "pp",
     "penis": "pp",
-    "NIGGER": "N***ER",
     "✓": "",
-    "kys": "your a nice person i wish i was you"
+    "kys": "your a nice person i wish i was you",
+    "niggger": "n****r"
 }
+
+loggable_words = ["nigger", "nigga", "niggger", "fuck"]

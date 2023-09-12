@@ -1,3 +1,5 @@
+#support disabled sorry
+
 import requests
 import time
 import os
