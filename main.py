@@ -7,6 +7,8 @@ import json
 import settings
 import bans
 import re
+import geoip2.database
+import geoip2.errors
 
 #add files if needed
 files = {
@@ -37,6 +39,19 @@ for filename, content in files.items():
 print()
 
 app = Flask(__name__)
+
+def is_ip_in_database(ip):
+    # Create a reader for the GeoIP2 database
+    reader = geoip2.database.Reader('GeoLite2-ASN_20230912/GeoLite2-ASN.mmdb')
+
+    # Perform a lookup for the IP address
+    try:
+        response = reader.city(ip)
+        # IP is in the database
+        return True
+    except geoip2.errors.AddressNotFoundError:
+        # IP is not in the database
+        return False
 
 # Route for the 404 error page
 @app.errorhandler(404)
@@ -70,7 +85,9 @@ def receive_message():
         user = escape(request.form.get('user'))
         message = escape(request.form.get('msg'))
         client_ip = request.headers.get('X-Forwarded-For')
-
+        # Check if the IP is in the database
+        if is_ip_in_database(client_ip):
+            return "Due to problems, VPNs and Proxies are disabled."
         if client_ip in bans.BANNED_IPS:
             ban_reason = bans.BANNED_IPS[client_ip]
             return f'You have been banned.<br>Reason: {ban_reason}'

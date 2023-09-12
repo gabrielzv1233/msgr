@@ -6,6 +6,7 @@ block = {
     "cock": "pp",
     "penis": "pp",
     "✓": "",
+    " ✓": "",
     "kys": "your a nice person i wish i was you",
     "niggger": "n****er"
 }
