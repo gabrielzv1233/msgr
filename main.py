@@ -10,6 +10,8 @@ import re
 import geoip2.database
 import geoip2.errors
 
+Raw_message_mode = False
+
 #add files if needed
 files = {
     "bans.py": 'BANNED_IPS = {\n    "BannedPersonsIpHere": "example"\n}',
@@ -61,7 +63,7 @@ def serve_html():
 def log_message(ip, user, time, message):
     for word in settings.loggable_words:
         if word.lower() in message.lower():
-            log_entry = f"[{ip}] {user} @ {time}: {message}\n"
+            log_entry = f"[{ip}] {user} @{time}: {message}\n"
             with open('message_log.txt', 'a') as file:
                 file.write(log_entry)
             break
@@ -101,7 +103,10 @@ def receive_message():
 
         if response.status_code == 200:
             with open('messages.txt', 'a') as file:
-                file.write(f'<b>{user}</b> <i>@<u>{server_time}</u></i>: {message}<br>\n')
+                if Raw_message_mode == False:
+                  file.write(f'<b>{user}</b> <i>@<u>{server_time}</u></i>: {message}<br>\n')
+                else:
+                  file.write(f'{user} @{server_time}: {message}<br>\n')
             print(f"New message sent by user {user} (IP: {client_ip})")
             return render_template('send.html')
         else:

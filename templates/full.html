@@ -3,7 +3,10 @@
 <head>
     <title>msgr</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
+      <script>
+        var autoScrollEnabled = true;
+        var lastScrollTop = 0;
+
         $(document).ready(function() {
             // Function to fetch and update the messages
             function updateMessages() {
@@ -13,8 +16,11 @@
                     dataType: "text",
                     success: function(data) {
                         $("#messages").html(data);
-                      // Scroll to bottom
-                        window.scrollTo(0, document.body.scrollHeight);
+                        // Check if auto-scrolling is enabled
+                        if (autoScrollEnabled) {
+                            // Scroll to bottom
+                            window.scrollTo(0, document.body.scrollHeight);
+                        }
                     }
                 });
             }
@@ -26,6 +32,20 @@
             setInterval(function() {
                 updateMessages();
             }, 1000);
+
+            // Add the scroll event listener to the window
+            $(window).on("scroll", function() {
+                var st = $(this).scrollTop();
+                if (st < lastScrollTop) {
+                    // User scrolled up
+                    autoScrollEnabled = false;
+
+                } else {
+                    // User scrolled down or reached the bottom
+                    autoScrollEnabled = true;
+                }
+                lastScrollTop = st;
+            });
         });
     </script>
     <style>
