@@ -17,7 +17,7 @@ files = {
     "fuck": "f**k",
     "nigga": "n***a",
     "nigger": "n***er",
-    "cunt": "c**t",
+    "cunt": "c**t",          
     "cock": "pp",
     "penis": "pp",
     "✓": "",
@@ -44,7 +44,7 @@ def page_not_found(e):
     return render_template('404.html'), 404
 
 @app.errorhandler(500)
-def Server_died_oof():
+def Server_died_oof(e):
     return render_template('500.html'), 500
 
 @app.route('/500.html')
@@ -56,7 +56,6 @@ def serve_html():
     return render_template('index.html')
 
 # Log loggable messages (ex messages with the N-word)
-# Create a logger function
 def log_message(ip, user, time, message):
     for word in settings.loggable_words:
         if word.lower() in message.lower():
@@ -73,14 +72,17 @@ def receive_message():
         client_ip = request.headers.get('X-Forwarded-For')
 
         if client_ip in bans.BANNED_IPS:
-          ban_reason = bans.BANNED_IPS[client_ip]
-          return f'You have been banned.<br>Reason: {ban_reason}'
+            ban_reason = bans.BANNED_IPS[client_ip]
+            return f'You have been banned.<br>Reason: {ban_reason}'
 
         if not user or not message:
             return redirect(url_for('send'))
 
+        if len(message) > 1000:
+            return redirect(url_for('too_long'))
+
         server_time = datetime.datetime.now().strftime("%H:%M")
-        
+
         # Call the log_message function before applying the chat filter
         log_message(client_ip, user, server_time, message)
 
@@ -99,11 +101,15 @@ def receive_message():
             with open('messages.txt', 'a') as file:
                 file.write(f'<b>{user}</b> <i>@<u>{server_time}</u></i>: {message}<br>\n')
             print(f"New message sent by user {user} (IP: {client_ip})")
-            return render_template('message_sent.html')
+            return render_template('send.html')
         else:
             return 'Failed to send the message.'
 
     return redirect(url_for('send'))
+
+@app.route('/too-long.html')
+def too_long():
+    return render_template('too_long.html')
 
 # feature removed bc im not maintaining it
 @app.route('/api/send', methods=['GET'])
