@@ -319,4 +319,4 @@ ok ur getting IP banned dude <br>
 <b>gabrielzv1233</b> <i>@<u>15:01</u></i>: oh wait on asspixel you need to register have u gotten to doing that?<br>
 <b>Jouci</b> <i>@<u>15:04</u></i>: idk how to register because when i do the /register (password) (password)  it doesnt work<br>
 <b>gabrielzv1233</b> <i>@<u>15:31</u></i>: so uve done something like /register thisisapassword69 thisisapassword69? if so then try another username, it may alr be in use<br>
-<br> Sorry for the downtime, i tryed adding a feature and didnt test it so it didnt allow sending messages, i removed the feature and its fine now <br>
+<br> Sorry for the downtime, i tryed adding a feature and didnt test it so it didnt allow sending messages, i removed the feature and its fine now <br><br>
