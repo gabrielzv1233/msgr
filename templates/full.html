@@ -5,7 +5,6 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
       <script>
         var autoScrollEnabled = true;
-        var lastScrollTop = 0;
 
         $(document).ready(function() {
             // Function to fetch and update the messages
@@ -35,16 +34,18 @@
 
             // Add the scroll event listener to the window
             $(window).on("scroll", function() {
-                var st = $(this).scrollTop();
-                if (st < lastScrollTop) {
-                    // User scrolled up
-                    autoScrollEnabled = false;
+                var $this = $(this);
+                var scrollHeight = document.documentElement.scrollHeight;
+                var clientHeight = $this.height();
+                var scrollTop = $this.scrollTop();
 
-                } else {
-                    // User scrolled down or reached the bottom
+                if (scrollHeight - scrollTop === clientHeight) {
+                    // User is at the very bottom
                     autoScrollEnabled = true;
+                } else {
+                    // User is not at the very bottom
+                    autoScrollEnabled = false;
                 }
-                lastScrollTop = st;
             });
         });
     </script>
