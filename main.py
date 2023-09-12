@@ -45,7 +45,8 @@ def receive_message():
         client_ip = request.headers.get('X-Forwarded-For')
 
         if client_ip in bans.BANNED_IPS:
-            return 'You have been IP banned.'
+          ban_reason = bans.BANNED_IPS[client_ip]
+          return f'You have been banned.<br>Reason: {ban_reason}'
 
         if not user or not message:
             return redirect(url_for('send'))
