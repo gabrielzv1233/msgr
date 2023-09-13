@@ -1,4 +1,5 @@
 from flask import Flask, request, render_template, redirect, url_for, send_file
+from collections import deque
 import requests
 import datetime
 import os
@@ -66,12 +67,16 @@ def log_message(ip, user, time, message):
                 file.write(log_entry)
             break
 
+# Define a deque to store the last messages
+last_messages = deque(maxlen=10)  # Store the last 10 messages
+
 @app.route('/send', methods=['GET', 'POST'])
 def receive_message():
     if request.method == 'POST':
         user = escape(request.form.get('user'))
         message = escape(request.form.get('msg'))
         client_ip = request.headers.get('X-Forwarded-For')
+
         # Check if the IP is in the database
         if client_ip in bans.BANNED_IPS:
             ban_reason = bans.BANNED_IPS[client_ip]
@@ -95,6 +100,14 @@ def receive_message():
             if word.lower() in message.lower():
                 message = message.replace(word, settings.block[word])
 
+        # Check for duplicate messages
+        for last_user, last_message in last_messages:
+            if user.lower() == last_user.lower() and message.lower() == last_message.lower():
+                return redirect(url_for('anti-spam'))
+
+        # Add the current message to the last_messages deque
+        last_messages.append((user, message))
+
         url = f"https://msgr.gabrielzv1233.repl.co/send?user={user}&msg={message}&time={server_time}"
 
         response = requests.get(url)
@@ -102,9 +115,9 @@ def receive_message():
         if response.status_code == 200:
             with open('messages.txt', 'a') as file:
                 if Raw_message_mode == False:
-                  file.write(f'<b>{user}</b> <i>@<u>{server_time}</u></i>: {message}<br>\n')
+                    file.write(f'<b>{user}</b> <i>@<u>{server_time}</u></i>: {message}<br>\n')
                 else:
-                  file.write(f'{user} @{server_time}: {message}<br>\n')
+                    file.write(f'{user} @{server_time}: {message}<br>\n')
             print(f"New message sent by user {user} (IP: {client_ip})")
             return render_template('send.html')
         else:
@@ -179,6 +192,11 @@ def serve_image():
 @app.route('/chatfilter')
 def serve_filter():
     return send_file('settings.py', mimetype='text/plain')
+
+
+@app.route('/anti-spam')
+def anti_spam():
+    return send_file('anti-spam.html', mimetype='text/plain')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
