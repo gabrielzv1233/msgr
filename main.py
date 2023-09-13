@@ -7,11 +7,13 @@ from html import escape
 import json
 import settings
 import bans
+import sys
 import re
 
 Raw_message_mode = False
 
 #add files if needed
+
 files = {
     "bans.py": 'BANNED_IPS = {\n    "BannedPersonsIpHere": "example"\n}',
     "messages.txt": "",
@@ -30,14 +32,26 @@ files = {
 
 loggable_words = ["nigger", "nigga", "niggger"]'''
 }
+
+failed_files = []
+
 for filename, content in files.items():
     if not os.path.exists(filename):
-        with open(filename, 'w') as file:
-            file.write(content)
-        print(f"Created file: {filename}")
+        try:
+            with open(filename, 'w', encoding='utf-8') as file:
+                file.write(content)
+            print(f"Created file: {filename}")
+        except IOError:
+            failed_files.append(filename)
+            print(f"Error creating file: {filename}")
     else:
         print(f"File already exists: {filename}, skipping")
+
 print()
+
+if failed_files:
+    print("Required files failed to be created. Please re-run the program.")
+    sys.exit(1)
 
 app = Flask(__name__)
 
@@ -68,7 +82,7 @@ def log_message(ip, user, time, message):
             break
 
 # Define a deque to store the last messages
-last_messages = deque(maxlen=10)  # Store the last 10 messages
+last_messages = deque(maxlen=1)  # Store the last 10 messages
 
 @app.route('/send', methods=['GET', 'POST'])
 def receive_message():
@@ -103,7 +117,7 @@ def receive_message():
         # Check for duplicate messages
         for last_user, last_message in last_messages:
             if user.lower() == last_user.lower() and message.lower() == last_message.lower():
-                return redirect(url_for('anti-spam'))
+                return redirect(url_for('anti_spam'))
 
         # Add the current message to the last_messages deque
         last_messages.append((user, message))
@@ -179,7 +193,7 @@ def info():
 @app.route('/api/get')
 def get_messages():
     return send_file('messages.txt', mimetype='text/html')
-
+  
 @app.route('/api/get/raw')
 def get_raw_messages():
     return send_file('messages.txt', mimetype='text/plain')
@@ -194,9 +208,9 @@ def serve_filter():
     return send_file('settings.py', mimetype='text/plain')
 
 
-@app.route('/anti-spam')
+@app.route('/anti_spam')
 def anti_spam():
-    return send_file('anti-spam.html', mimetype='text/plain')
+    return render_template('anti-spam.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
