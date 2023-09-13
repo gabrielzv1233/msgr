@@ -7,8 +7,6 @@ import json
 import settings
 import bans
 import re
-import geoip2.database
-import geoip2.errors
 
 Raw_message_mode = False
 
