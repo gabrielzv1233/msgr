@@ -7,3 +7,4 @@ replit.nix
 bans.py
 message_log.txt
 __pycache__
+SpecialUsers.py

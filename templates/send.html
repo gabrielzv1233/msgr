@@ -30,6 +30,31 @@
     </form>
 </center>
     <script>
+  // Check if the fingerprint cookie exists
+  if (!document.cookie.includes("fingerprint")) {
+    // Generate a random fingerprint value
+    const fingerprint = generateUUID();
+    
+    // Set the fingerprint cookie with appropriate attributes
+    document.cookie = `fingerprint=${fingerprint}; SameSite=None; Secure`;
+  }
+
+  // Function to generate a random UUID
+  function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0,
+        v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
+    // Function to reroll the UUID and print its value
+  function rerollUUID() {
+    const fingerprint = generateUUID();
+    console.log("New UUID:", fingerprint);
+  }
+</script>
+    <script>
         var messageField = document.getElementById("message");
 
         // Load the saved username from the cookie and set it in the input field on page load

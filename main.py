@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, url_for, send_file
+from flask import Flask, request, render_template, redirect, url_for, send_file, make_response
 from collections import deque
 import requests
 import datetime
@@ -10,9 +10,21 @@ import bans
 import sys
 import re
 
+try:
+    import SpecialUsers
+except ModuleNotFoundError:
+    # Create SpecialUsers.py file
+    with open("SpecialUsers.py", "w") as file:
+        file.write('''Special_users = {
+    "OwnersUUID": "<b style=\\"color:gold;\\">{user} ✓</b> <i>@<u>{server_time}</u></i>: {message}<br>\\n"
+}''')
+    exit("please re-run server")
+
 Raw_message_mode = False
 
 #add files if needed
+
+import os
 
 files = {
     "bans.py": 'BANNED_IPS = {\n    "BannedPersonsIpHere": "example"\n}',
@@ -30,7 +42,10 @@ files = {
     "niggger": "n****er"
 }
 
-loggable_words = ["nigger", "nigga", "niggger"]'''
+loggable_words = ["nigger", "nigga", "niggger"]''',
+    "SpecialUsers.py": '''Special_users = {
+  "OwnersUUID": "<b style="color:gold;">{user} &#x2713;</b> <i>@<u>{server_time}</u></i>: {message}<br>\n"
+}'''
 }
 
 failed_files = []
@@ -122,20 +137,25 @@ def receive_message():
         # Add the current message to the last_messages deque
         last_messages.append((user, message))
 
-        url = f"https://msgr.gabrielzv1233.repl.co/send?user={user}&msg={message}&time={server_time}"
-
-        response = requests.get(url)
-
-        if response.status_code == 200:
-            with open('messages.txt', 'a') as file:
-                if Raw_message_mode == False:
-                    file.write(f'<b>{user}</b> <i>@<u>{server_time}</u></i>: {message}<br>\n')
-                else:
-                    file.write(f'{user} @{server_time}: {message}<br>\n')
-            print(f"New message sent by user {user} (IP: {client_ip})")
-            return render_template('send.html')
+        # Check if the fingerprint cookie exists
+        fingerprint = request.cookies.get('fingerprint')
+        if fingerprint:
+            if fingerprint in SpecialUsers.Special_users:
+                message_format = SpecialUsers.Special_users[fingerprint]
+                formatted_message = message_format.format(user=user, server_time=server_time, message=message)
+            else:
+                formatted_message = f"<b>{user}</b> <i>@<u>{server_time}</u></i>: {message}<br>\n"
         else:
-            return 'Failed to send the message.'
+            formatted_message = f"<b>{user}</b> <i>@<u>{server_time}</u></i>: {message}<br>\n"
+
+        with open('messages.txt', 'a') as file:
+            if Raw_message_mode == False:
+                file.write(formatted_message)
+            else:
+                file.write(f'{user} @{server_time}: {message}<br>\n')
+
+        print(f"New message sent by user {user} (IP: {client_ip})")
+        return render_template('send.html')
 
     return redirect(url_for('send'))
 
@@ -211,6 +231,15 @@ def serve_filter():
 @app.route('/anti_spam')
 def anti_spam():
     return render_template('anti-spam.html')
+
+@app.route('/get_cookie', methods=['GET'])
+def get_cookie_value():
+    fingerprint = request.cookies.get('fingerprint')
+    
+    if fingerprint:
+        return f"The value of the fingerprint cookie is: {fingerprint}"
+    else:
+        return "The fingerprint cookie is not set."
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
