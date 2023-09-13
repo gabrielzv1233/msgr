@@ -26,23 +26,31 @@ Raw_message_mode = False
 
 import os
 
+# start config
+block = {
+    "fuck": "f**k",
+    "nigga": "n***a",
+    "nigger": "n***er",
+    "cunt": "c**t",
+    "cock": "pp",
+    "penis": "pp",
+    "✓": "",
+    " ✓": "",
+    "kys": "your a nice person i wish i was you",
+    "niggger": "n****er",
+    "niger": "n**er",
+    "niga": "n**a",
+    "faggot" "f****t",
+    "fagot" "f***t"
+}
+
+loggable_words = ["nigger", "nigga", "niggger", "niger", "niga", "faggot", "fagot"]
+# end config
+
 files = {
     "bans.py": 'BANNED_IPS = {\n    "BannedPersonsIpHere": "example"\n}',
     "messages.txt": "",
     "message_log.txt": '',
-    "settings.py": '''block = {
-    "fuck": "f**k",
-    "nigga": "n***a",
-    "nigger": "n***er",
-    "cunt": "c**t",          
-    "cock": "pp",
-    "penis": "pp",
-    "✓": "",
-    "kys": "your a nice person i wish i was you",
-    "niggger": "n****er"
-}
-
-loggable_words = ["nigger", "nigga", "niggger"]''',
     "SpecialUsers.py": '''Special_users = {
   "OwnersUUID": "<b style="color:gold;">{user} &#x2713;</b> <i>@<u>{server_time}</u></i>: {message}<br>\n"
 }'''
@@ -89,7 +97,7 @@ def serve_html():
 
 # Log loggable messages (ex messages with the N-word)
 def log_message(ip, user, time, message):
-    for word in settings.loggable_words:
+    for word in loggable_words:
         if word.lower() in message.lower():
             log_entry = f"[{ip}] {user} @{time}: {message}\n"
             with open('message_log.txt', 'a') as file:
@@ -123,11 +131,11 @@ def receive_message():
         log_message(client_ip, user, server_time, message)
 
         # Apply case-insensitive chat filtering to username and message
-        for word in settings.block:
+        for word in block:
             if word.lower() in user.lower():
-                user = user.replace(word, settings.block[word])
+                user = user.replace(word, block[word])
             if word.lower() in message.lower():
-                message = message.replace(word, settings.block[word])
+                message = message.replace(word, block[word])
 
         # Check for duplicate messages
         for last_user, last_message in last_messages:
@@ -177,12 +185,12 @@ def send_message_query():
     message = escape(message)
 
     # Apply case-insensitive chat filtering to username and message
-    for word in settings.block:
+    for word in block:
         pattern = re.compile(re.escape(word), re.IGNORECASE)
         if pattern.search(user):
-            user = pattern.sub(settings.block[word], user)
+            user = pattern.sub(block[word], user)
         if pattern.search(message):
-            message = pattern.sub(settings.block[word], message)
+            message = pattern.sub(block[word], message)
 
     server_time = datetime.datetime.now().strftime("%H:%M")
 
