@@ -5,7 +5,6 @@ import datetime
 import os
 from html import escape
 import json
-import settings
 import bans
 import sys
 import re
@@ -40,8 +39,8 @@ block = {
     "niggger": "n****er",
     "niger": "n**er",
     "niga": "n**a",
-    "faggot" "f****t",
-    "fagot" "f***t"
+    "faggot": "f****t",
+    "fagot": "f***t"
 }
 
 loggable_words = ["nigger", "nigga", "niggger", "niger", "niga", "faggot", "fagot"]
