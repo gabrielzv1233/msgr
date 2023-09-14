@@ -15,7 +15,7 @@ except ModuleNotFoundError:
     # Create SpecialUsers.py file
     with open("SpecialUsers.py", "w") as file:
         file.write('''Special_users = {
-    "OwnersUUID": "<b style=\\"color:gold;\\">{user} ✓</b> <i>@<u>{server_time}</u></i>: {message}<br>\\n"
+    "OwnersUUID": "<b style=\\"color:gold;\\">{user} <sup> ✓</sup></b> <i>@<u>{server_time}</u></i>: {message}<br>\\n"
 }''')
     exit("please re-run server")
 
@@ -134,6 +134,14 @@ def receive_message():
             if word.lower() in message.lower():
                 message = message.replace(word, block[word])
 
+        # Replace [{urlDisplay}](url) with <a href="url">urlDisplay</a>
+        message = re.sub(
+        r'\[([^\]]*)\]\(([^)]+)\)',
+        lambda match: '<a href="{}">{}</a>'.format(
+            match.group(2) if match.group(1) == '' or match.group(2) == match.group(1) or not match.group(2).startswith("http") else 'https://' + match.group(2),
+            match.group(2) if match.group(1) == '' or match.group(2) == match.group(1) else match.group(1) if match.group(1) != '' else '[]'),
+        message)
+
         # Check for duplicate messages
         for last_user, last_message in last_messages:
             if user.lower() == last_user.lower() and message.lower() == last_message.lower():
@@ -230,8 +238,7 @@ def serve_image():
 
 @app.route('/chatfilter')
 def serve_filter():
-    return send_file('settings.py', mimetype='text/plain')
-
+    return block
 
 @app.route('/anti_spam')
 def anti_spam():
