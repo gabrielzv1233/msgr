@@ -41,7 +41,9 @@ block = {
     "fagot": "f***t"
 }
 
-loggable_words = ["nigger", "nigga", "niggger", "niger", "niga", "faggot", "fagot"]
+loggable_words = ["nigger", "nigga", "niggger", "niger", "niga", "faggot", "fagot", "nig" ]
+# "nig" may make false positives 
+
 # end config
 
 files = {
