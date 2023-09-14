@@ -236,10 +236,6 @@ def serve_image():
     faviconimg = 'templates/favicon.png'
     return send_file(faviconimg, mimetype='image/png')
 
-@app.route('/chatfilter')
-def serve_filter():
-    return block
-
 @app.route('/anti_spam')
 def anti_spam():
     return render_template('anti-spam.html')
