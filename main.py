@@ -134,8 +134,8 @@ def receive_message():
             if word.lower() in message.lower():
                 message = message.replace(word, block[word])
 
-        # Convert [display](url) to <a href="https://url">display</a>
-        message = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="https://\2">\1</a>', message)
+        # Convert URLs to clickable links
+        message = re.sub(r'(https?://\S+)', r'<a target=\"_blank\" href="\1">\1</a>', message)
 
         # Check for duplicate messages
         for last_user, last_message in last_messages:
@@ -161,6 +161,7 @@ def receive_message():
                 file.write(formatted_message)
             else:
                 file.write(f'{user} @{server_time}: {message}<br>\n')
+
         fingerprint = request.cookies.get('fingerprint')
         print(f"New message sent by user {user} (IP: {client_ip}, UUID: {fingerprint}")
         return render_template('send.html')
