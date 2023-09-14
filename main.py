@@ -102,7 +102,7 @@ def log_message(ip, user, time, message):
             break
 
 # Define a deque to store the last messages
-last_messages = deque(maxlen=1)  # Store the last 10 messages
+last_messages = []
 
 @app.route('/send', methods=['GET', 'POST'])
 def receive_message():
@@ -134,13 +134,8 @@ def receive_message():
             if word.lower() in message.lower():
                 message = message.replace(word, block[word])
 
-        # Replace [{urlDisplay}](url) with <a href="url">urlDisplay</a>
-        message = re.sub(
-        r'\[([^\]]*)\]\(([^)]+)\)',
-        lambda match: '<a href="{}">{}</a>'.format(
-            match.group(2) if match.group(1) == '' or match.group(2) == match.group(1) or not match.group(2).startswith("http") else 'https://' + match.group(2),
-            match.group(2) if match.group(1) == '' or match.group(2) == match.group(1) else match.group(1) if match.group(1) != '' else '[]'),
-        message)
+        # Convert [display](url) to <a href="https://url">display</a>
+        message = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="https://\2">\1</a>', message)
 
         # Check for duplicate messages
         for last_user, last_message in last_messages:
@@ -148,7 +143,7 @@ def receive_message():
                 return redirect(url_for('anti_spam'))
 
         # Add the current message to the last_messages deque
-        last_messages.append((user, message))
+        last_messages.insert(0, (user, message))
 
         # Check if the fingerprint cookie exists
         fingerprint = request.cookies.get('fingerprint')
