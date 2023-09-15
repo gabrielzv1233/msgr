@@ -33,7 +33,6 @@ block = {
     "cunt": "c**t",
     "cock": "pp",
     "penis": "pp",
-    "kys": "your a nice person i wish i was you",
     "niggger": "n****er",
     "niger": "n**er",
     "niga": "n**a",
@@ -41,9 +40,7 @@ block = {
     "fagot": "f***t"
 }
 
-loggable_words = ["nigger", "nigga", "niggger", "niger", "niga", "faggot", "fagot", "nig" ]
-# "nig" may make false positives 
-
+loggable_words = ["nigger", "nigga", "niggger", "niger", "niga", "faggot", "fagot", "n*gger", "n*gga"]
 # end config
 
 files = {

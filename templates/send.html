@@ -22,11 +22,11 @@
 <center>
     <form action="/send" method="POST" onsubmit="saveUsername()">
         <label for="username"><b>Username:</b></label><br>
-        <input style="text-align:center;" type="text" maxlength="27" class="um" id="username" name="user" required><br>  
+        <input tabindex="0" style="text-align:center;" autocorrect="false" autocomplete="off" type="text" maxlength="27" class="um" id="username" name="user" required><br>  
         <label for="message"><b>Message:</b></label>
-        <input maxlength="1000" autocorrect="true" autocomplete="off" type="text" id="message" name="msg" class="um" style="width:99%;" autofocus required><br>
+        <input tabindex="0" maxlength="1000" autocorrect="true" autocomplete="off" type="text" id="message" name="msg" class="um" style="width:99%;" autofocus required><br>
         
-        <input style="border:hidden;border-radius:10px;width:10vw;background-color:#0053A6;color:#F5F9FC;" type="submit" value="Send" onclick="removeUnloadEvent()">
+        <input tabindex="0" style="border:hidden;border-radius:10px;width:10vw;background-color:#0053A6;color:#F5F9FC;" type="submit" value="Send" onclick="removeUnloadEvent()">
     </form>
 </center>
     <script>
@@ -41,7 +41,7 @@
 
   // Function to generate a random UUID
   function generateUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    return 'xxxxxxxx-xxxx-xxxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
       const r = Math.random() * 16 | 0,
         v = c === 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
@@ -56,7 +56,6 @@
 </script>
     <script>
         var messageField = document.getElementById("message");
-
         // Load the saved username from the cookie and set it in the input field on page load
         window.onload = function() {
             var savedUsername = getCookie("username");

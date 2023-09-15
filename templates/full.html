@@ -5,7 +5,11 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
       <script>
         var autoScrollEnabled = true;
-
+        document.addEventListener('keydown', function(event) {
+  if (event.key === 'Tab') {
+    event.preventDefault();
+  }
+});
         $(document).ready(function() {
             // Function to fetch and update the messages
             function updateMessages() {
