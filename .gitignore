@@ -8,3 +8,4 @@ bans.py
 message_log.txt
 __pycache__
 SpecialUsers.py
+message_log_all.txt

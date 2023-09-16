@@ -1,9 +1,11 @@
 from flask import Flask, request, render_template, redirect, url_for, send_file, make_response
+from sentry_sdk.integrations.flask import FlaskIntegration
 from collections import deque
 import requests
 import datetime
 import os
 from html import escape
+import sentry_sdk
 import json
 import bans
 import sys
@@ -37,14 +39,17 @@ block = {
     "niger": "n**er",
     "niga": "n**a",
     "faggot": "f****t",
-    "fagot": "f***t"
+    "fagot": "f***t",
+    "kill your self": "i hope you have a long happy life :D",
+    "pornhub.com": "[banned-URL]"
 }
 
-loggable_words = ["nigger", "nigga", "niggger", "niger", "niga", "faggot", "fagot", "n*gger", "n*gga"]
+loggable_words = ["nigger", "nigga", "niggger", "niger", "niga", "faggot", "fagot", "n*gger", "n*gga", "kill your self"]
 # end config
 
 files = {
     "bans.py": 'BANNED_IPS = {\n    "BannedPersonsIpHere": "example"\n}',
+    "message_log_all.txt": "",
     "messages.txt": "",
     "message_log.txt": '',
     "SpecialUsers.py": '''Special_users = {
@@ -74,6 +79,22 @@ if failed_files:
 
 app = Flask(__name__)
 
+# sentery anylitics and diagnostics
+sentry_sdk.init(
+    dsn=os.environ.get("sentryDSN"),
+    integrations=[FlaskIntegration()],
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    # We recommend adjusting this value in production.
+    traces_sample_rate=1.0,
+    # Set profiles_sample_rate to 1.0 to profile 100%
+    # of sampled transactions.
+    # We recommend adjusting this value in production.
+    profiles_sample_rate=1.0,
+
+)
+
+
 # Route for the 404 error page
 @app.errorhandler(404)
 def page_not_found(e):
@@ -99,6 +120,10 @@ def log_message(ip, user, time, message):
             with open('message_log.txt', 'a') as file:
                 file.write(log_entry)
             break
+def log_message_all(ip, user, time, message):
+    log_entry = f"[{ip}] {user} @{time}: {message}\n"
+    with open('message_log_all.txt', 'a') as file:
+        file.write(log_entry)
 
 # Define a deque to store the last messages
 last_messages = []
@@ -125,7 +150,8 @@ def receive_message():
 
         # Call the log_message function before applying the chat filter
         log_message(client_ip, user, server_time, message)
-
+        # also log all messages in case if users bypass filters (comment out if not needed ex when making a private room)
+        log_message_all(client_ip, user, server_time, message)
         # Apply case-insensitive chat filtering to username and message
         for word in block:
             if word.lower() in user.lower():
