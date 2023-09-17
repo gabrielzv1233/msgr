@@ -48,7 +48,12 @@ loggable_words = ["nigger", "nigga", "niggger", "niger", "niga", "faggot", "fago
 # end config
 
 files = {
-    "bans.py": 'BANNED_IPS = {\n    "BannedPersonsIpHere": "example"\n}',
+    "bans.py": '''BANNED_IPS = {
+    "BannedPersonsIpHere": "example"
+}
+BANNED_UUIDS = {
+    "BannedUUIDHere": "example"
+}''',
     "message_log_all.txt": "",
     "messages.txt": "",
     "message_log.txt": '',
@@ -120,8 +125,8 @@ def log_message(ip, user, time, message):
             with open('message_log.txt', 'a') as file:
                 file.write(log_entry)
             break
-def log_message_all(ip, user, time, message):
-    log_entry = f"[{ip}] {user} @{time}: {message}\n"
+def log_message_all(ip, user, UUID, time, message):
+    log_entry = f"[{ip}] ({UUID}) {user} @{time}: {message}\n"
     with open('message_log_all.txt', 'a') as file:
         file.write(log_entry)
 
@@ -134,8 +139,12 @@ def receive_message():
         user = escape(request.form.get('user'))
         message = escape(request.form.get('msg'))
         client_ip = request.headers.get('X-Forwarded-For')
-
-        # Check if the IP is in the database
+        # Check if the UUID is banned
+        fingerprint = request.cookies.get('fingerprint')
+        if fingerprint in bans.BANNED_UUIDS:
+          ban_reason = bans.BANNED_UUIDS[fingerprint]
+          return f'You have been banned.<br>Reason: {ban_reason}'
+        # Check if the IP is banned
         if client_ip in bans.BANNED_IPS:
             ban_reason = bans.BANNED_IPS[client_ip]
             return f'You have been banned.<br>Reason: {ban_reason}'
@@ -149,9 +158,10 @@ def receive_message():
         server_time = datetime.datetime.now().strftime("%H:%M")
 
         # Call the log_message function before applying the chat filter
-        log_message(client_ip, user, server_time, message)
+        log_message(client_ip, user,  server_time, message)
         # also log all messages in case if users bypass filters (comment out if not needed ex when making a private room)
-        log_message_all(client_ip, user, server_time, message)
+        fingerprint = request.cookies.get('fingerprint')
+        log_message_all(client_ip, user, fingerprint, server_time, message)
         # Apply case-insensitive chat filtering to username and message
         for word in block:
             if word.lower() in user.lower():
@@ -171,7 +181,6 @@ def receive_message():
         last_messages.insert(0, (user, message))
 
         # Check if the fingerprint cookie exists
-        fingerprint = request.cookies.get('fingerprint')
         if fingerprint:
             if fingerprint in SpecialUsers.Special_users:
                 message_format = SpecialUsers.Special_users[fingerprint]
