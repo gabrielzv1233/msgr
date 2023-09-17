@@ -41,7 +41,8 @@ block = {
     "faggot": "f****t",
     "fagot": "f***t",
     "kill your self": "i hope you have a long happy life :D",
-    "pornhub.com": "[banned-URL]"
+    "pornhub.com": "[banned-URL]",
+    "suck it": "s**t it"
 }
 
 loggable_words = ["nigger", "nigga", "niggger", "niger", "niga", "faggot", "fagot", "n*gger", "n*gga", "kill your self", "pornhub.com"]
