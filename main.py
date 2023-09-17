@@ -44,7 +44,7 @@ block = {
     "pornhub.com": "[banned-URL]"
 }
 
-loggable_words = ["nigger", "nigga", "niggger", "niger", "niga", "faggot", "fagot", "n*gger", "n*gga", "kill your self"]
+loggable_words = ["nigger", "nigga", "niggger", "niger", "niga", "faggot", "fagot", "n*gger", "n*gga", "kill your self", "pornhub.com"]
 # end config
 
 files = {

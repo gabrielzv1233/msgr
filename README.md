@@ -4,4 +4,5 @@ when applying new settings, bans, or special users, you must reload the server a
 SpecialUsers.py, message_logs.txt, message_log_all.txt and bans.py are hidden so peoples sensitive info isnt displayed<br><br>
 for diagnostics please go to sentry.io and setup a flask app, get the text in the DSN var and set a secret named "sentryDSN"<br><br>
 if you do not have flask, requests, or sentry installed please run init.sh<br><br>
-message_log_all.txt logs all messages including the IP, incase if someone bypasses filters
+message_log_all.txt logs all messages including the IP, incase if someone bypasses filters<br>
+i suggest clearing out message_log_all.txt everyonce in a while to keep from using too much storage
