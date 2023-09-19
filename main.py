@@ -147,7 +147,7 @@ def receive_message():
         user_agent_obj = user_agents.parse(user_agent)
           # disable Safari usage
         if 'Safari' in user_agent_obj.browser.family:
-          return "Safari browser is unsupported"
+          return "Safari browser is unsupported<br>platform will not work as supposed to"
         # Check if the UUID is banned
         fingerprint = request.cookies.get('fingerprint')
         
@@ -207,7 +207,7 @@ def receive_message():
                 file.write(f'{user} @{server_time}: {message}<br>\n')
 
         fingerprint = request.cookies.get('fingerprint')
-        print(f"New message sent by user {user} (IP: {client_ip}, UUID: {fingerprint} browser:{user_agent_obj}")
+        print(f"New message sent by user {user} (IP: {client_ip}, UUID: {fingerprint} Browser: {user_agent_obj}")
         return render_template('send.html')
 
     return redirect(url_for('send'))
