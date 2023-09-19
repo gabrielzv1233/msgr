@@ -1,18 +1,19 @@
 from flask import Flask, request, render_template, redirect, url_for, send_file, make_response
 from sentry_sdk.integrations.flask import FlaskIntegration
 from collections import deque
+from html import escape
+import user_agents
+import sentry_sdk
 import requests
 import datetime
-import os
-from html import escape
-import sentry_sdk
 import json
 import bans
 import sys
 import re
+import os
 
 try:
-    import SpecialUsers
+   import SpecialUsers
 except ModuleNotFoundError:
     # Create SpecialUsers.py file
     with open("SpecialUsers.py", "w") as file:
@@ -140,8 +141,16 @@ def receive_message():
         user = escape(request.form.get('user'))
         message = escape(request.form.get('msg'))
         client_ip = request.headers.get('X-Forwarded-For')
+        message_unmodified = request.form.get('msg')
+        user_unmodified = user = request.form.get('user')
+        user_agent = request.headers.get('User-Agent')
+        user_agent_obj = user_agents.parse(user_agent)
+          # disable Safari usage
+        if 'Safari' in user_agent_obj.browser.family:
+          return "Safari browser is unsupported"
         # Check if the UUID is banned
         fingerprint = request.cookies.get('fingerprint')
+        
         if fingerprint in bans.BANNED_UUIDS:
           ban_reason = bans.BANNED_UUIDS[fingerprint]
           return f'You have been banned.<br>Reason: {ban_reason}'
@@ -159,10 +168,10 @@ def receive_message():
         server_time = datetime.datetime.now().strftime("%H:%M")
 
         # Call the log_message function before applying the chat filter
-        log_message(client_ip, user,  server_time, message)
+        log_message(client_ip, user_unmodified,  server_time, message_unmodified)
         # also log all messages in case if users bypass filters (comment out if not needed ex when making a private room)
         fingerprint = request.cookies.get('fingerprint')
-        log_message_all(client_ip, user, fingerprint, server_time, message)
+        log_message_all(client_ip, user_unmodified, fingerprint, server_time, message_unmodified)
         # Apply case-insensitive chat filtering to username and message
         for word in block:
             if word.lower() in user.lower():
@@ -198,7 +207,7 @@ def receive_message():
                 file.write(f'{user} @{server_time}: {message}<br>\n')
 
         fingerprint = request.cookies.get('fingerprint')
-        print(f"New message sent by user {user} (IP: {client_ip}, UUID: {fingerprint}")
+        print(f"New message sent by user {user} (IP: {client_ip}, UUID: {fingerprint} browser:{user_agent_obj}")
         return render_template('send.html')
 
     return redirect(url_for('send'))
