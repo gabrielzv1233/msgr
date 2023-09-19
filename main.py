@@ -178,7 +178,7 @@ def receive_message():
                 user = user.replace(word, block[word])
             if word.lower() in message.lower():
                 message = message.replace(word, block[word])
-
+        message = message.replace('$', '\\u0024')
         # Convert URLs to clickable links
         message = re.sub(r'(https?://\S+)', r'<a target=\"_blank\" href="\1">\1</a>', message)
 
