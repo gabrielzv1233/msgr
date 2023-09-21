@@ -174,10 +174,9 @@ def receive_message():
         log_message_all(client_ip, user_unmodified, fingerprint, server_time, message_unmodified)
         # Apply case-insensitive chat filtering to username and message
         for word in block:
-            if word.lower() in user.lower():
-                user = user.replace(word, block[word])
-            if word.lower() in message.lower():
-                message = message.replace(word, block[word])
+    # Use regular expression with case-insensitive flag to replace filtered words
+          user = re.sub(re.compile(re.escape(word), re.IGNORECASE), block[word], user)
+          message = re.sub(re.compile(re.escape(word), re.IGNORECASE), block[word], message)
         message = message.replace('$', '\\u0024')
         # Convert URLs to clickable links
         message = re.sub(r'(https?://\S+)', r'<a target=\"_blank\" href="\1">\1</a>', message)
@@ -209,6 +208,7 @@ def receive_message():
         fingerprint = request.cookies.get('fingerprint')
         print(f"New message sent by user {user} (IP: {client_ip}, UUID: {fingerprint} Browser: {user_agent_obj}")
         return render_template('send.html')
+      # The filter for censoring words isn’t properly censoring words that sent the same case, ex it censors “faggot” but not “FAGGot”
 
     return redirect(url_for('send'))
 
@@ -216,35 +216,6 @@ def receive_message():
 def too_long():
     return render_template('too_long.html')
 
-# feature removed bc im not maintaining it
-@app.route('/api/send', methods=['GET'])
-def send_message_query():
-    user = request.args.get('user')
-    message = request.args.get('msg')
-    client_ip = request.headers.get('X-Forwarded-For')
-
-    if not user or not message:
-        return 'Invalid request.<br> make sure both username and message fields have a non-space character'
-
-    user = escape(user)
-    message = escape(message)
-
-    # Apply case-insensitive chat filtering to username and message
-    for word in block:
-        pattern = re.compile(re.escape(word), re.IGNORECASE)
-        if pattern.search(user):
-            user = pattern.sub(block[word], user)
-        if pattern.search(message):
-            message = pattern.sub(block[word], message)
-
-    server_time = datetime.datetime.now().strftime("%H:%M")
-
-    with open('messages.txt', 'a') as file:
-         #file.write(f'<b>{user}</b> <i>@<u>{server_time}</u></i>: {message}<br>\n')
-
-      print(f"New message sent by user {user} (IP: {client_ip})")
-    #return 'Message sent successfully.'
-    return 'Failed, sending API is disabled as it is to hard to keep censorship and automatic moderation up to date'
 @app.route('/full', methods=['GET'])
 def display_messages():
     if os.stat('messages.txt').st_size == 0:

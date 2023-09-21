@@ -14,11 +14,23 @@
     iframe {
       border: hidden;
     }
+    #send {
+      width:100vw;
+      height:calc(95px + 1vh);
+      outline: none;
+      box-shadow: none;
+    }
+    #full {
+      width:100vw;
+      height:calc(100% - calc(95px + 1vh));
+      outline: none;
+      box-shadow: none;
+    }
   </style>
 </head>
 <body style="margin:0px;;bottom:0px;">
-<iframe src="/full" style="width:100vw;height:calc(100% - 95px);outline: none;box-shadow: none;"></iframe>
-<iframe id="send" src="/send.html" style="width:100vw;height:95px;outline: none;box-shadow: none;" ></iframe>
+<iframe id="full" src="/full"></iframe>
+<iframe id="send" src="/send.html"></iframe>
 
 <script>
     window.addEventListener('beforeunload', function() {
