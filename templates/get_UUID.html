@@ -1,0 +1,10 @@
+your UUID is: <input id="UUID" type="text" readonly value="{{UUID}}" size="24"> <button onclick="copy()">Copy</button>
+    <script>
+        function copy() {
+            var textBox = document.getElementById("UUID");
+            textBox.select();
+            textBox.setSelectionRange(0, 99999); // For mobile devices
+
+            document.execCommand("copy");
+        }
+    </script>

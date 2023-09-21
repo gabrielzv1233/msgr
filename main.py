@@ -281,22 +281,15 @@ def anti_spam():
     return render_template('anti-spam.html')
 
 @app.route('/get_uuid', methods=['GET'])
-def get_UUID_lower():
-    fingerprint = request.cookies.get('fingerprint')
-    
-    if fingerprint:
-        return f"The value of the fingerprint cookie is: {fingerprint}"
-    else:
-        return "The fingerprint cookie is not set."
-
 @app.route('/get_UUID', methods=['GET'])
-def get_UUID_upper():
+def get_UUID():
     fingerprint = request.cookies.get('fingerprint')
     
     if fingerprint:
-        return f"The value of the fingerprint cookie is: {fingerprint}"
+        return render_template('get_UUID.html', UUID=fingerprint)
     else:
-        return "The fingerprint cookie is not set."
+        fingerprint = "not set"
+        render_template('get_UUID.html', UUID=fingerprint)
       
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
