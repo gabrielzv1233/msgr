@@ -1,116 +1,26 @@
+<!DOCTYPE html>
 <html>
 <head>
     <title>Message Sender</title>
-  <style>
-    body {
-      background-color:#1C2333;
-    }
-    label {
-      color: #f5f9fc;
-    }
-    .um {
-      border-radius:4px;
-      outline:0px;
-      border:1px black;
-      background-color:#3C445C;
-      color:#CCD1D9;
-      font-weight:bold;
-    }
-  </style>
+<style>body{background-color:#1C2333}label{color:#f5f9fc}.um{border-radius:4px;outline:0;border:1px #000;background-color:#3C445C;color:#CCD1D9;font-weight:700}</style>
 </head>
 <body style="margin:0px;overflow:hidden;">
 <center>
     <form action="/send" method="POST" onsubmit="saveUsername()">
         <label for="username"><b>Username:</b></label><br>
-        <input tabindex="0" style="text-align:center;" autocorrect="false" autocomplete="off" type="text" maxlength="27" class="um" id="username" name="user" required><br>  
+        <input tabindex="0" style="text-align:center;" autocorrect="false" autocomplete="off" type="text"
+               maxlength="27" class="um" id="username" name="user" required><br>
         <label for="message"><b>Message:</b></label>
-        <input tabindex="0" maxlength="1000" autocorrect="true" autocomplete="off" type="text" id="message" name="msg" class="um" style="width:99%;" autofocus required><br>
-        
-        <input tabindex="0" style="border:hidden;border-radius:10px;width:10vw;background-color:#0053A6;color:#F5F9FC;" type="submit" value="Send" onclick="removeUnloadEvent()">
+        <input tabindex="0" maxlength="1000" autocorrect="true" autocomplete="off" type="text" id="message"
+               name="msg" class="um" style="width:99%;" autofocus required><br>
+
+        <input tabindex="0"
+               style="border:hidden;border-radius:10px;width:10vw;background-color:#0053A6;color:#F5F9FC;" type="submit"
+               value="Send" onclick="removeUnloadEvent()">
     </form>
 </center>
 <script>
-  // Function to generate a random UUID
-  function generateUUID() {
-    return 'xxxxxxxx-xxxx-xxxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      var r = Math.random() * 16 | 0,
-        v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
-  }
-
-  // Function to get the value of a cookie
-  function getCookie(cookieName) {
-    var name = cookieName + "=";
-    var decodedCookie = decodeURIComponent(document.cookie);
-    var cookieArray = decodedCookie.split(';');
-    for (var i = 0; i < cookieArray.length; i++) {
-      var cookie = cookieArray[i];
-      while (cookie.charAt(0) == ' ') {
-        cookie = cookie.substring(1);
-      }
-      if (cookie.indexOf(name) == 0) {
-        return cookie.substring(name.length, cookie.length);
-      }
-    }
-    return "";
-  }
-
-  // Check if the fingerprint cookie exists
-  if (!document.cookie.includes("fingerprint")) {
-    // Generate a random fingerprint value
-    var fingerprint = generateUUID();
-    
-    // Set the fingerprint cookie with appropriate attributes
-    document.cookie = "fingerprint=" + fingerprint + "; SameSite=None; Secure; path=/";
-  }
-
-  var messageField = document.getElementById("message");
-
-  // Load the saved username from the cookie and set it in the input field on page load
-  window.onload = function() {
-    var savedUsername = getCookie("username");
-    if (savedUsername) {
-      document.getElementById("username").value = savedUsername;
-    }
-  };
-
-  // Save the username as a cookie when the form is submitted
-  function saveUsername() {
-    var username = document.getElementById("username").value;
-    setCookie("username", username, 1);
-  }
-
-  // Save the username as a cookie when receiving the saveUsername message
-  window.addEventListener("message", function(event) {
-    if (event.data === "saveUsername") {
-      saveUsername();
-    }
-  });
-
-  // Remove the beforeunload event listener when the submit button is clicked
-  function removeUnloadEvent() {
-    window.removeEventListener("beforeunload", handleBeforeUnload);
-  }
-
-  // Function to handle the beforeunload event
-  function handleBeforeUnload(event) {
-    if (messageField.value.trim() !== "") {
-      event.preventDefault(); // Cancel the unload event
-      event.returnValue = ""; // Required for Chrome
-    }
-  }
-
-  // Add the beforeunload event listener
-  window.addEventListener("beforeunload", handleBeforeUnload);
-
-  // Function to set a cookie
-  function setCookie(cookieName, cookieValue, expirationDays) {
-    var d = new Date();
-    d.setTime(d.getTime() + (expirationDays * 24 * 60 * 60 * 1000));
-    var expires = "expires=" + d.toUTCStringd();
-    document.cookie = cookieName + "=" + cookieValue + "; " + expires + "; path=/";
-  }
+function generateUUID(){return"xxxxxxxx-xxxx-xxxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,function(e){var n=16*Math.random()|0;return("x"===e?n:3&n|8).toString(16)})}function getCookie(e){for(var n=e+"=",t=decodeURIComponent(document.cookie).split(";"),r=0;r<t.length;r++){for(var a=t[r];" "==a.charAt(0);)a=a.substring(1);if(0==a.indexOf(n))return a.substring(n.length,a.length)}return""}if(!document.cookie.includes("fingerprint")){var e=generateUUID();document.cookie="fingerprint="+e+"; SameSite=None; Secure; path=/"}var messageField=document.getElementById("message");function saveUsername(){setCookie("username",document.getElementById("username").value,1)}function removeUnloadEvent(){window.removeEventListener("beforeunload",handleBeforeUnload)}function handleBeforeUnload(e){""!==messageField.value.trim()&&(e.preventDefault(),e.returnValue="")}function setCookie(e,n,t){var r=new Date;r.setTime(r.getTime()+864e5*t);var a="expires="+r.toUTCString();document.cookie=e+"="+n+"; "+a+"; path=/"}window.onload=function(){var e=getCookie("username");e&&(document.getElementById("username").value=e)},window.addEventListener("message",function(e){"saveUsername"===e.data&&saveUsername()}),window.addEventListener("beforeunload",handleBeforeUnload);
 </script>
 </body>
 </html>

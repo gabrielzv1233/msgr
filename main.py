@@ -244,8 +244,7 @@ def get_raw_messages():
 
 @app.route('/favicon.png')
 def serve_image():
-    faviconimg = 'templates/favicon.png'
-    return send_file(faviconimg, mimetype='image/png')
+    return send_file("templates/favicon.png", mimetype='image/png')
 
 @app.route('/anti_spam')
 def anti_spam():
@@ -261,6 +260,9 @@ def get_UUID():
     else:
         fingerprint = "not set"
         render_template('get_UUID.html', UUID=fingerprint)
-      
+
+@app.route('/jquery-3.6.0.min.js')
+def jquery():
+    return send_file("templates/jquery-3.6.0.min.js", mimetype="text/javascript")
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
