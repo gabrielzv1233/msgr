@@ -3,13 +3,13 @@ import requests
 mode = input("Please choose \"raw\" for raw format or \"plain\" for plain text\n» ")
 
 if mode == "raw":
-    url = 'https://msgr.gabrielzv1233.repl.co/api/get/raw'
+    url = 'https://msgr.gabrielzv1233.net/api/get/raw'
     response = requests.get(url)
     text = response.text.replace('<br>', '<br>\n')
     print(text)
     
 elif mode == "plain":
-    url = 'https://msgr.gabrielzv1233.repl.co/api/get/raw'
+    url = 'https://msgr.gabrielzv1233.net/api/get/raw'
     response = requests.get(url)
     text = response.text.replace('<br>', '\n')
     text1 = text.replace('<i>', '')

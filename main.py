@@ -32,21 +32,24 @@ import os
 block = {
     "fuck": "f**k",
     "nigga": "n***a",
-    "nigger": "n***er",
+    "nigger": "n****r",
     "cunt": "c**t",
     "cock": "pp",
     "penis": "pp",
-    "niggger": "n****er",
+    "niggger": "n*****r",
     "niger": "n**er",
     "niga": "n**a",
     "faggot": "f****t",
     "fagot": "f***t",
     "kill your self": "i hope you have a long happy life :D",
     "pornhub.com": "[banned-URL]",
-    "suck it": "s**t it"
+    "suck it": "s**t it",
+    "niiga": "n***a",
+    "卐": "",
+    "nigg3r": "n****r"
 }
 
-loggable_words = ["nigger", "nigga", "niggger", "niger", "niga", "faggot", "fagot", "n*gger", "n*gga", "kill your self", "pornhub.com"]
+loggable_words = ["nigger", "nigga", "niggger", "niger", "niga", "faggot", "fagot", "n*gger", "n*gga", "kill your self", "pornhub.com", "niiga","nigg3r"]
 # end config
 
 files = {
@@ -121,15 +124,17 @@ def serve_html():
 
 # Log loggable messages (ex messages with the N-word)
 def log_message(ip, user, time, message):
-    for word in loggable_words:
-        if word.lower() in message.lower():
-            log_entry = f"[{ip}] {user} @{time}: {message}\n"
-            with open('message_log.txt', 'a') as file:
-                file.write(log_entry)
-            break
+  message = message.replace('$', '\\u0024')
+  for word in loggable_words:
+      if word.lower() in message.lower():
+          log_entry = f"[{ip}] {user} @{time}: {message}\n"
+          with open('message_log.txt', 'a') as file:
+              file.write(log_entry)
+          break
 def log_message_all(ip, user, UUID, time, message):
-    log_entry = f"[{ip}] ({UUID}) {user} @{time}: {message}\n"
-    with open('message_log_all.txt', 'a') as file:
+  message = message.replace('$', '\\u0024')
+  log_entry = f"[{ip}] ({UUID}) {user} @{time}: {message}\n"
+  with open('message_log_all.txt', 'a') as file:
         file.write(log_entry)
 
 # Define a deque to store the last messages
@@ -145,6 +150,11 @@ def receive_message():
         user_unmodified = user = request.form.get('user')
         user_agent = request.headers.get('User-Agent')
         user_agent_obj = user_agents.parse(user_agent)
+        if 'CustomDomain' in os.environ:
+          custom_domain = os.environ['CustomDomain']
+          request_domain = request.headers.get('Host')
+          if request_domain != custom_domain:
+              return "This service is not accessible from this URL"
           # disable Safari usage
         if 'Safari' in user_agent_obj.browser.family:
           return "Safari browser is unsupported<br>platform will not work as supposed to"
@@ -181,10 +191,8 @@ def receive_message():
         # Convert URLs to clickable links
         message = re.sub(r'(https?://\S+)', r'<a target=\"_blank\" href="\1">\1</a>', message)
 
-        # Check for duplicate messages
-        for last_user, last_message in last_messages:
-            if user.lower() == last_user.lower() and message.lower() == last_message.lower():
-                return redirect(url_for('anti_spam'))
+        if last_messages and user.lower() == last_messages[0][0].lower() and message.lower() == last_messages[0][1].lower():
+            return redirect(url_for('anti_spam'))
 
         # Add the current message to the last_messages deque
         last_messages.insert(0, (user, message))
