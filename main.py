@@ -60,7 +60,7 @@ BANNED_UUIDS = {
     "BannedUUIDHere": "example"
 }''',
     "message_log_all.txt": "",
-    "messages.txt": "",
+    "messages.html": "",
     "message_log.txt": '',
     "SpecialUsers.py": '''Special_users = {
   "OwnersUUID": "<b style="color:gold;">{user} &#x2713;</b> <i>@<u>{server_time}</u></i>: {message}<br>\n"
@@ -124,7 +124,8 @@ def serve_html():
 
 # Log loggable messages (ex messages with the N-word)
 def log_message(ip, user, time, message):
-  message = message.replace('$', '\\u0024')
+  message = message.replace('$', '&#x0024;')
+  message = message.replace('%', '&#x0025;')
   for word in loggable_words:
       if word.lower() in message.lower():
           log_entry = f"[{ip}] {user} @{time}: {message}\n"
@@ -132,7 +133,8 @@ def log_message(ip, user, time, message):
               file.write(log_entry)
           break
 def log_message_all(ip, user, UUID, time, message):
-  message = message.replace('$', '\\u0024')
+  message = message.replace('$', '&#x0024;')
+  message = message.replace('%', '&#x0025;')
   log_entry = f"[{ip}] ({UUID}) {user} @{time}: {message}\n"
   with open('message_log_all.txt', 'a') as file:
         file.write(log_entry)
@@ -187,7 +189,8 @@ def receive_message():
     # Use regular expression with case-insensitive flag to replace filtered words
           user = re.sub(re.compile(re.escape(word), re.IGNORECASE), block[word], user)
           message = re.sub(re.compile(re.escape(word), re.IGNORECASE), block[word], message)
-        message = message.replace('$', '\\u0024')
+        message = message.replace('$', '&#x0024;')
+        message = message.replace('%', '&#x0025;')
         # Convert URLs to clickable links
         message = re.sub(r'(https?://\S+)', r'<a target=\"_blank\" href="\1">\1</a>', message)
 
@@ -207,7 +210,7 @@ def receive_message():
         else:
             formatted_message = f"<b>{user}</b> <i>@<u>{server_time}</u></i>: {message}<br>\n"
 
-        with open('messages.txt', 'a') as file:
+        with open('messages.html', 'a') as file:
             if Raw_message_mode == False:
                 file.write(formatted_message)
             else:
@@ -226,10 +229,10 @@ def too_long():
 
 @app.route('/full', methods=['GET'])
 def display_messages():
-    if os.stat('messages.txt').st_size == 0:
+    if os.stat('messages.html').st_size == 0:
         pass
 
-    with open('messages.txt', 'r') as file:
+    with open('messages.html', 'r') as file:
         messages = file.read()
 
     return render_template('full.html', messages=messages)
@@ -244,11 +247,11 @@ def info():
 
 @app.route('/api/get')
 def get_messages():
-    return send_file('messages.txt', mimetype='text/html')
+    return send_file('messages.html', mimetype='text/html')
   
 @app.route('/api/get/raw')
 def get_raw_messages():
-    return send_file('messages.txt', mimetype='text/plain')
+    return send_file('messages.html', mimetype='text/plain')
 
 @app.route('/favicon.png')
 def serve_image():

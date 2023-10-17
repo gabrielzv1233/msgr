@@ -10,10 +10,14 @@
     <meta name="author" content="Gabrielzv1233">
     <meta charset="UTF-8">
     <!-- link rel="icon" href="https://msgr.gabrielzv1233.net/favicon.png" -->
-  <title>Get UUID</title>
+    <title>Get UUID</title>
 </head>
 <body>
-your UUID is: <input id="UUID" type="text" readonly value="{{UUID}}" size="24"> <button onclick="copy()">Copy</button>
+    <div id="container">
+        your UUID is:
+        <input id="UUID" type="text" readonly value="{{UUID}}">
+        <button onclick="copy()">Copy</button>
+    </div>
     <script>
         function copy() {
             var textBox = document.getElementById("UUID");
@@ -22,6 +26,19 @@ your UUID is: <input id="UUID" type="text" readonly value="{{UUID}}" size="24"> 
 
             document.execCommand("copy");
         }
+
+        // Function to adjust input width
+        function adjustInputWidth() {
+            var container = document.getElementById("container");
+            var input = document.getElementById("UUID");
+            var text = input.value;
+            var textWidth = text.length * 7; // Adjust the multiplier as needed
+            input.style.width = textWidth + "px";
+        }
+
+        // Call the function initially and when the window is resized
+        adjustInputWidth();
+        window.addEventListener("resize", adjustInputWidth);
     </script>
 </body>
 </html>
