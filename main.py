@@ -1,31 +1,12 @@
-from flask import Flask, request, render_template, redirect, url_for, send_file, make_response
+from flask import Flask, request, render_template, redirect, url_for, send_file
 from sentry_sdk.integrations.flask import FlaskIntegration
-from collections import deque
 from html import escape
 import user_agents
 import sentry_sdk
-import requests
 import datetime
-import json
 import bans
 import sys
 import re
-import os
-
-try:
-   import SpecialUsers
-except ModuleNotFoundError:
-    # Create SpecialUsers.py file
-    with open("SpecialUsers.py", "w") as file:
-        file.write('''Special_users = {
-    "OwnersUUID": "<b style=\\"color:gold;\\">{user} <sup> ✓</sup></b> <i>@<u>{server_time}</u></i>: {message}<br>\\n"
-}''')
-    exit("please re-run server")
-
-Raw_message_mode = False
-
-#add files if needed
-
 import os
 
 # start config
@@ -50,7 +31,21 @@ block = {
 }
 
 loggable_words = ["nigger", "nigga", "niggger", "niger", "niga", "faggot", "fagot", "n*gger", "n*gga", "kill your self", "pornhub.com", "niiga","nigg3r"]
-# end config
+
+Raw_message_mode = False
+#end config
+
+#add files if needed
+
+try:
+   import SpecialUsers
+except ModuleNotFoundError:
+    # Create SpecialUsers.py file
+    with open("SpecialUsers.py", "w") as file:
+        file.write('''Special_users = {
+    "OwnersUUID": "<b style=\\"color:gold;\\">{user} <sup> ✓</sup></b> <i>@<u>{server_time}</u></i>: {message}<br>\\n"
+}''')
+    exit("please re-run server")
 
 files = {
     "bans.py": '''BANNED_IPS = {
@@ -103,7 +98,6 @@ sentry_sdk.init(
     profiles_sample_rate=1.0,
 
 )
-
 
 # Route for the 404 error page
 @app.errorhandler(404)
