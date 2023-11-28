@@ -1,15 +1,18 @@
-from flask import Flask, request, render_template, redirect, url_for, send_file
+from flask import Flask, request, render_template, redirect, url_for, send_file, make_response
 from sentry_sdk.integrations.flask import FlaskIntegration
+from collections import deque
 from html import escape
 import user_agents
 import sentry_sdk
+import requests
 import datetime
-import bans
+import json
 import sys
 import re
 import os
 
 # start config
+Raw_message_mode = False
 block = {
     "fuck": "f**k",
     "nigga": "n***a",
@@ -31,12 +34,9 @@ block = {
 }
 
 loggable_words = ["nigger", "nigga", "niggger", "niger", "niga", "faggot", "fagot", "n*gger", "n*gga", "kill your self", "pornhub.com", "niiga","nigg3r"]
-
-Raw_message_mode = False
-#end config
+# end config
 
 #add files if needed
-
 try:
    import SpecialUsers
 except ModuleNotFoundError:
@@ -47,19 +47,23 @@ except ModuleNotFoundError:
 }''')
     exit("please re-run server")
 
-files = {
-    "bans.py": '''BANNED_IPS = {
-    "BannedPersonsIpHere": "example"
+try:
+   import bans
+except ModuleNotFoundError:
+    # Create SpecialUsers.py file
+    with open("bans.py", "w") as file:
+        file.write('''BANNED_IPS = {
+"BannedPersonsIpHere": "example"
 }
 BANNED_UUIDS = {
-    "BannedUUIDHere": "example"
-}''',
+"BannedUUIDHere": "example"
+}''')
+    exit("please re-run server")
+
+files = {
     "message_log_all.txt": "",
     "messages.html": "",
-    "message_log.txt": '',
-    "SpecialUsers.py": '''Special_users = {
-  "OwnersUUID": "<b style="color:gold;">{user} &#x2713;</b> <i>@<u>{server_time}</u></i>: {message}<br>\n"
-}'''
+    "message_log.txt": ''
 }
 
 failed_files = []
@@ -98,6 +102,7 @@ sentry_sdk.init(
     profiles_sample_rate=1.0,
 
 )
+
 
 # Route for the 404 error page
 @app.errorhandler(404)
@@ -156,7 +161,7 @@ def receive_message():
           return "Safari browser is unsupported<br>platform will not work as supposed to"
         # Check if the UUID is banned
         fingerprint = request.cookies.get('fingerprint')
-        
+
         if fingerprint in bans.BANNED_UUIDS:
           ban_reason = bans.BANNED_UUIDS[fingerprint]
           return f'You have been banned.<br>Reason: {ban_reason}'
@@ -242,7 +247,7 @@ def info():
 @app.route('/api/get')
 def get_messages():
     return send_file('messages.html', mimetype='text/html')
-  
+
 @app.route('/api/get/raw')
 def get_raw_messages():
     return send_file('messages.html', mimetype='text/plain')
@@ -259,7 +264,7 @@ def anti_spam():
 @app.route('/get_UUID', methods=['GET'])
 def get_UUID():
     fingerprint = request.cookies.get('fingerprint')
-    
+
     if fingerprint:
         return render_template('get_UUID.html', UUID=fingerprint)
     else:
