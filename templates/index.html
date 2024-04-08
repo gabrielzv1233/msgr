@@ -1,49 +1,63 @@
-<html>
-<head>
-    <script>
-        if (window.location.hostname === 'msgr.gabrielzv1233.repl.co') {
-  window.location.href = 'http://msgr.gabrielzv1233.net';
-      }
-    </script>
-    <meta content="msgr" property="og:title" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta content="msgr is a simple chatting website" property="og:description" />
-    <meta content="https://msgr.gabrielzv1233.net" property="og:url" />
-    <meta content="https://msgr.gabrielzv1233.net/favicon.png" property="og:image" />
-    <meta content="#0E1525" data-react-helmet="true" name="theme-color" />
-    <meta name="keywords" content="english, texting, text, chatroom, python, chatting, multiplayer">
-    <meta name="author" content="Gabrielzv1233">
-    <meta charset="UTF-8">
-    <!-- link rel="icon" href="https://msgr.gabrielzv1233.net/favicon.png" -->
-    <title>msgr</title>
-  <style>
-    iframe {
-      border: hidden;
-    }
-    #send {
-      width:100vw;
-      height:calc(95px + 1vh);
-      outline: none;
-      box-shadow: none;
-    }
-    #full {
-      width:100vw;
-      height:calc(100% - calc(95px + 1vh));
-      outline: none;
-      box-shadow: none;
-    }
-  </style>
-</head>
-<body style="margin:0px;;bottom:0px;">
-<iframe id="full" src="/full"></iframe>
-<iframe id="send" src="https://msgr.gabrielzv1233.net/send.html"></iframe>
-
+<style>
+body {
+    margin:0;
+}
+.messages {
+    margin:5px;
+}
+.send {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+input[type="submit"] {
+    border-radius:5px;
+}
+</style>
+<div class="messages"></div>
+<center>
+<div class="send">
+    Username: {{username}}
+<form method="POST" action="/send">
+    <input type="text" placeholder="message" required name="message" style="width:99vw;">
+    <input type="submit" value="send" style="width:10%;">
+</form>
+<form method="POST" action="/logout"><input type="submit" value="Logout">
+</form>
+<form method="POST" action="/delete_account">
+    <input type="checkbox" required>Check this and click button below to delete account<br>
+    <input type="submit" value="Delete account">
+</form>
+</center>
+</div>
 <script>
-    window.addEventListener('beforeunload', function() {
-        var iframeWindow = document.getElementById('send').contentWindow;
-        iframeWindow.postMessage('saveUsername', '*');
-    });
-</script>
+// Get the reference to the div element with class "messages"
+var messagesDiv = document.querySelector('.messages');
 
-</body>
-</html>
+// Function to fetch the HTML file and update the content of the div
+function updateMessages() {
+  fetch("{{ url_for('static', filename='messages.html') }}")
+    .then(function(response) {
+      // Check if the request was successful
+      if (response.ok) {
+        return response.text(); // Convert the response to text
+      } else {
+        throw new Error('Error: ' + response.status);
+      }
+    })
+    .then(function(html) {
+      // Replace the content of the div with the fetched HTML
+      messagesDiv.innerHTML = html;
+    })
+    .catch(function(error) {
+      // Handle any errors that occurred during the fetch
+      console.log('Fetch error:', error);
+    });
+}
+
+// Call the updateMessages function initially
+updateMessages();
+
+// Call the updateMessages function every 1 second
+setInterval(updateMessages, 1000);
+</script>
