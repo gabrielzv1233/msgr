@@ -214,7 +214,7 @@ def send():
                                 message = message.replace('"', "&#34;")
                                 message = message.replace("'", "&#39;")
                                 message = re.sub(r"___(.*?)___", r'<u>\1</u>', message)
-                                message = re.sub(r"~~~(.*?)~~~", r'<s>\1</s>', message)
+                                message = re.sub(r"~~(.*?)~~", r'<s>\1</s>', message)
                                 message = re.sub(r"```(.*?)```", r'<div class="code">\1</div>', message)
                                 message = re.sub(r"\*\*(.*?)\*\*", r'<b>\1</b>', message)
                                 message = re.sub(r"\*(.*?)\*", r'<i>\1</i>', message)
