@@ -78,39 +78,51 @@ def settings():
     return f"""<!DOCTYPE html>
 <html>
 <head>
-<title>msgr v2</title><meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
+<title>msgr v2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
     textarea {{
-      resize: both;
-      width: 100%;
-      height: 28vh;
+        resize: both;
+        width: 100%;
+        height: 27vh;
     }}
+
     body {{
         background-color: #1C2333;
-        color:white;
-        }}
-    textarea {{ 
+        color: white;
+    }}
+
+    textarea {{
         background-color: #1C2333;
-        color:white;
+        color: white;
         border-radius: 10px;
         border: 1px solid white;
     }}
+
     input[type="submit"] {{
         border-radius: 5px;
     }}
-  </style>
+</style>
+<script>
+    document.addEventListener("keydown", function(event) {{
+        if (event.ctrlKey && event.key === "s") {{
+            event.preventDefault(); // Prevent the default browser save function
+            document.querySelector('input[type="submit"]').click(); // Trigger the submit button click event
+        }}
+    }});
+</script>
 </head>
 <body>
-  <form method="POST" action="/admin/_settings">
-  <input type="hidden" name="admin_key" value="{admin_key}">
+<form method="POST" action="/admin/_settings">
+    <input type="hidden" name="admin_key" value="{admin_key}">
     banned IPs:<br>
-    <textarea name="ips" >{ips}</textarea><br>
+    <textarea name="ips">{ips}</textarea><br>
     banned UUIDs:<br>
-    <textarea name="uuids" >{uuids}</textarea><br>
+    <textarea name="uuids">{uuids}</textarea><br>
     Special users:<br>
-    <textarea name="special_users" >{special_users}</textarea><br>
-    <input type="submit" value="Submit">
-  </form>
+    <textarea name="special_users">{special_users}</textarea><br>
+    <input type="submit" value="Save">
+</form>
 </body>
 </html>"""
 
@@ -213,16 +225,17 @@ def send():
                                 message = message.replace(">", "&#62;")
                                 message = message.replace('"', "&#34;")
                                 message = message.replace("'", "&#39;")
+                                for word in filter:
+                                    message = re.sub(re.compile(re.escape(word), re.IGNORECASE), filter[word], message)
+                                if message == "" or not message:
+                                    return redirect(url_for('main'))
+                                message = re.sub(r'!(https?://\S+)', r'<a href="\1">\1</a>', message)
+                                message = re.sub(r'\[(.*?)\]\((.*?)\)', r'<a href="\2">\1</a>', message)
                                 message = re.sub(r"___(.*?)___", r'<u>\1</u>', message)
                                 message = re.sub(r"~~(.*?)~~", r'<s>\1</s>', message)
                                 message = re.sub(r"```(.*?)```", r'<div class="code">\1</div>', message)
                                 message = re.sub(r"\*\*(.*?)\*\*", r'<b>\1</b>', message)
                                 message = re.sub(r"\*(.*?)\*", r'<i>\1</i>', message)
-                                for word in filter:
-                                    message = re.sub(re.compile(re.escape(word), re.IGNORECASE), filter[word], message)
-                                if message == "" or not message:
-                                    return redirect(url_for('main'))
-                                message = re.sub(r'(https?://\S+)', r'<a target=\"_blank\" href="\1">\1</a>', message)
                                 key = data[1]
                                 print(key)
                                 if data[1] in special_users:

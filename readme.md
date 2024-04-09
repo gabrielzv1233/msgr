@@ -8,7 +8,7 @@ there is also special users, this is used when you want to for example mark some
 <br>
 to change the chat filter, you must reload the server after setting the var near the start of the code called `filter`<br>
 <br>
-in the chatting app (main route) you can use some common markdown styling and other additional stuff like `​```code```​` `___underline___` `**bold**` `*italic*` `~~srikethrough~~` you can also input a link like `https://example.com/` and it will automatically form a \<a> link<br>
+in the chatting app (main route) you can use some common markdown styling and other additional stuff like `​```code```​` `___underline___` `**bold**` `*italic*` `~~srikethrough~~`  for links you can use the markdown method `[example.com](https://example.com)` or input a link like `!https://example.com/` (must have ! at the start, if i code it to not require that, it confilcts with the markdown method) and it will automatically form a \<a> link<br>
 messages are limited to a lenth of 600 and usernames are limited to 22 chars in lenth<br>
 <br>
 in v1 i had it so if you scrolled up in the messages, it would stop the autoscroll until you reach the bottom of the page, but i cant seem to replicate that function so i made a toggle for it, if you would like to contribute and add that function, please submit the updated file in a github issue and i will glady credit you (as long as it works)
