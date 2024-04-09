@@ -1,63 +1,158 @@
-<style>
-body {
-    margin:0;
-}
-.messages {
-    margin:5px;
-}
-.send {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-}
-input[type="submit"] {
-    border-radius:5px;
-}
-</style>
-<div class="messages"></div>
-<center>
-<div class="send">
-    Username: {{username}}
-<form method="POST" action="/send">
-    <input type="text" placeholder="message" required name="message" style="width:99vw;">
-    <input type="submit" value="send" style="width:10%;">
-</form>
-<form method="POST" action="/logout"><input type="submit" value="Logout">
-</form>
-<form method="POST" action="/delete_account">
-    <input type="checkbox" required>Check this and click button below to delete account<br>
-    <input type="submit" value="Delete account">
-</form>
-</center>
-</div>
-<script>
-// Get the reference to the div element with class "messages"
-var messagesDiv = document.querySelector('.messages');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            margin: 0;
+            background-color: #1C2333;
+            overflow-y: scroll;
+        }
+        .messages {
+            margin: 5px;
+            color: #F5F9FC;
+            word-break: break-all;
+            padding-bottom: 170px;
+        }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            border: 1px solid #000;
+            background-color: #1C2333;
+            color: #CCD1D9;
+            font-weight: 700;
+        }
+        .send {
+            border-top: 3px solid black;
+            padding-top: 5px;
+        }
+        input[type="submit"] {
+            border-radius: 5px;
+        }
+        .toggle-scroll-bg {
+            border-radius: 5px;
+        }
+        label {
+            color: #F5F9FC;
+        }
+        .account {
+            margin: 0;
+            padding: 0;
+        }
+        .toggle-scroll {
+            margin-top: 5px;
+            cursor: pointer;
+        }
+        a {
+            color:blue;
+        }
+        .code {
+            display: inline-block;
+            background-color: #1f1f1f;
+            border-radius: 10px;
+            padding-left: 10px;
+            padding-right: 10px;
+            padding-bottom:1px;
+            padding-top:1px;
+            border: 1px solid white;
+        }
+    </style>
+    <title>msgr v2</title><meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div class="messages"></div>
+    <center>
+        <div class="footer">
+            <div class="send">
+                <button class="toggle-scroll-bg"><div class="toggle-scroll" onclick="toggleScroll()" style="padding-bottom:5px;">☑ Enable auto scroll</div></button>
+                <form method="POST" action="/send" autocomplete="off">
+                    <div style="color:white;">Username: {{username}}</div>
+                    <input type="text" id="message" placeholder="message" maxlength="600" required name="message" style="width:98%;">
+                    <br><input type="submit" value="send" style="width:100px;">
+                </form>
+            </div>
+            <div class="account">
+                <form method="POST" action="/logout">
+                    <input type="submit" value="Logout">
+                </form>
+                <form method="POST" action="/delete_account">
+                    <input type="checkbox" required>Check this and click button below to delete account<br>
+                    <input type="submit" value="Delete account">
+                </form>
+            </div>
+        </div>
+    </center>
+    <script>
+        const messagesDiv = document.querySelector('.messages');
+let autoScrollEnabled = true;
+let scrolledUp = false;
+let updatingEnabled = true;
 
-// Function to fetch the HTML file and update the content of the div
+window.addEventListener('DOMContentLoaded', function() {
+    var textbox = document.getElementById('message');
+    textbox.focus();
+});
+
 function updateMessages() {
-  fetch("{{ url_for('static', filename='messages.html') }}")
-    .then(function(response) {
-      // Check if the request was successful
-      if (response.ok) {
-        return response.text(); // Convert the response to text
-      } else {
-        throw new Error('Error: ' + response.status);
-      }
-    })
-    .then(function(html) {
-      // Replace the content of the div with the fetched HTML
-      messagesDiv.innerHTML = html;
-    })
-    .catch(function(error) {
-      // Handle any errors that occurred during the fetch
-      console.log('Fetch error:', error);
-    });
+    if (!updatingEnabled) return;
+
+    fetch("{{ url_for('static', filename='conversations/messages.html') }}")
+        .then(function(response) {
+            if (response.ok) {
+                return response.text();
+            } else {
+                throw new Error('Error: ' + response.status);
+            }
+        })
+        .then(function(html) {
+            const shouldScroll = (messagesDiv.scrollTop + messagesDiv.clientHeight === messagesDiv.scrollHeight);
+
+            messagesDiv.innerHTML = html;
+
+            if (autoScrollEnabled && shouldScroll) {
+                window.scrollTo(0, document.body.scrollHeight);
+            } else if (scrolledUp && shouldScroll) {
+                scrolledUp = false;
+            }
+        })
+        .catch(function(error) {
+            console.log('Fetch error:', error);
+        });
 }
 
-// Call the updateMessages function initially
 updateMessages();
-
-// Call the updateMessages function every 1 second
 setInterval(updateMessages, 1000);
-</script>
+setInterval(function() {
+    var links = document.getElementsByTagName('a');
+    for (var i = 0; i < links.length; i++) {
+      var link = links[i];
+      if (link.id !== 'nt') {
+        link.id = 'nt';
+        link.target = '_blank';
+      }
+    }
+  }, 1000);
+
+messagesDiv.addEventListener('scroll', function() {
+    const isAtBottom = messagesDiv.scrollTop + messagesDiv.clientHeight === messagesDiv.scrollHeight;
+
+    if (!isAtBottom) {
+        scrolledUp = true;
+    }
+});
+
+function toggleScroll() {
+    autoScrollEnabled = !autoScrollEnabled;
+    const toggleButton = document.querySelector('.toggle-scroll');
+    toggleButton.textContent = autoScrollEnabled ? '☑ Enable auto scroll' : '☐ Enable auto scroll';
+}
+
+
+document.addEventListener('mouseup', function() {
+    const selectedText = window.getSelection().toString();
+    updatingEnabled = (selectedText === '');
+});
+    </script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            margin: 0;
+            background-color: #1C2333;
+            overflow-y: scroll;
+        }
+        .messages {
+            margin: 5px;
+            color: #F5F9FC;
+            word-break: break-all;
+            padding-bottom: 45px;
+        }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            border: 1px solid #000;
+            background-color: #1C2333;
+            color: #CCD1D9;
+            padding:10px;
+            font-size:150%;
+        }
+        a {
+            color:blue;
+        }
+    </style>
+    <title>msgr v2</title><meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div class="messages"></div>
+    <center>
+        <div class="footer">
+            <a id="nt" href="{{signup}}">signup</a> or <a id="nt" href="{{login}}">login</a>
+        </div>
+    </center>
+    <script>
+        const messagesDiv = document.querySelector('.messages');
+        let autoScrollEnabled = true;
+        let scrolledUp = false;
+
+        function updateMessages() {
+            fetch("{{ url_for('static', filename='conversations/messages.html') }}")
+                .then(function(response) {
+                    if (response.ok) {
+                        return response.text();
+                    } else {
+                        throw new Error('Error: ' + response.status);
+                    }
+                })
+                .then(function(html) {
+                    const shouldScroll = (messagesDiv.scrollTop + messagesDiv.clientHeight === messagesDiv.scrollHeight);
+
+                    messagesDiv.innerHTML = html;
+
+                    if (autoScrollEnabled && shouldScroll) {
+                        window.scrollTo(0, document.body.scrollHeight);
+                    } else if (scrolledUp && shouldScroll) {
+                        scrolledUp = false;
+                    }
+                })
+                .catch(function(error) {
+                    console.log('Fetch error:', error);
+                });
+        }
+
+        updateMessages();
+        setInterval(updateMessages, 1000);
+        setInterval(function() {
+            var links = document.getElementsByTagName('a');
+            for (var i = 0; i < links.length; i++) {
+              var link = links[i];
+              if (link.id !== 'nt') {
+                link.id = 'nt';
+                link.target = '_blank';
+              }
+            }
+          }, 1000);
+
+        messagesDiv.addEventListener('scroll', function() {
+            const isAtBottom = messagesDiv.scrollTop + messagesDiv.clientHeight === messagesDiv.scrollHeight;
+
+            if (!isAtBottom) {
+                scrolledUp = true;
+            }
+        });
+
+        function toggleScroll() {
+            autoScrollEnabled = !autoScrollEnabled;
+            const toggleButton = document.querySelector('.toggle-scroll');
+            toggleButton.textContent = autoScrollEnabled ? 'Click to disable Auto Scroll' : 'Click to enable Auto Scroll';
+        }
+    </script>
+</body>
+</html>

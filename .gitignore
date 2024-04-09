@@ -1,0 +1,10 @@
+data/admindata.bak
+data/admindata.dat
+data/admindata.dir
+data/userdata.bak
+data/userdata.dat
+data/userdata.dir
+data/settings.bak
+data/settings.dat
+data/settings.dir
+static/conversations/*
