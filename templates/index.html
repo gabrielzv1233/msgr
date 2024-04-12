@@ -7,6 +7,7 @@
             margin: 0;
             background-color: #1C2333;
             overflow-y: scroll;
+            color: white;   
         }
         .messages {
             margin: 5px;
@@ -69,6 +70,7 @@
                 <form method="POST" action="/send" autocomplete="off">
                     <div style="color:white;">Username: {{username}}</div>
                     <input type="text" id="message" placeholder="message" maxlength="600" required name="message" style="width:98%;">
+                    <br>characters left: <b class="char-left"></b>
                     <br><input type="submit" value="send" style="width:100px;">
                 </form>
             </div>
@@ -84,6 +86,40 @@
         </div>
     </center>
     <script>
+// Get the message input element and char left element
+const messageInput = document.getElementById('message');
+const charLeftElement = document.querySelector('.char-left');
+
+// Define the char limit
+const charLimit = 600;
+
+// Function to update char left element based on input
+function updateCharCount() {
+  // Calculate the number of characters remaining
+  const messageLength = messageInput.value.length;
+  const charsRemaining = charLimit - messageLength;
+
+  // Update the char left element
+  charLeftElement.textContent = charsRemaining;
+
+  // Apply color based on the number of characters remaining
+  if (charsRemaining > 100) {
+    charLeftElement.style.color = 'limegreen';
+  } else if (charsRemaining > 50) {
+    charLeftElement.style.color = 'yellow';
+  } else if (charsRemaining > 25) {
+    charLeftElement.style.color = 'orange';
+  } else {
+    charLeftElement.style.color = 'red';
+  }
+}
+
+// Initial update on page load
+updateCharCount();
+
+// Event listener for input event on the message input
+messageInput.addEventListener('input', updateCharCount);
+
         const messagesDiv = document.querySelector('.messages');
 let autoScrollEnabled = true;
 let scrolledUp = false;

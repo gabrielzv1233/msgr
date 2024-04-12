@@ -55,76 +55,97 @@ log.setLevel(logging.ERROR)
 
 @app.route("/admin/settings")
 def settings():
-    db = shelve.open('data/settings')
-    if "banned_ips" in db:
-        ips = db["banned_ips"]
+    db = shelve.open('data/admindata')
+    username = request.cookies.get('admin_un')
+    login_token = request.cookies.get('admin_LOGIN_TOKEN')
+    if not username or not login_token:
+        response = make_response("not logged in")
+        response.delete_cookie("admin_un")
+        response.delete_cookie("admin_LOGIN_TOKEN")
+        response.headers["Location"] = "/admin/login"
+        return response, 302
     else:
-        ips = r"""{"ip":'reason'}"""
-        
-    if "banned_uuids" in db:
-        uuids = db["banned_uuids"]
-    else:
-        uuids = r"""{"uuid":'reason'}"""
-
-        
-    if "special_users" in db:
-        special_users = db["special_users"]
-    else:
-        special_users = r"""{"special_user":'<b>{username}</b> <i>@{time}</i>: {message}<br>\n'}"""
-    db["banned_ips"] = ips
-    db["banned_uuids"] = uuids
-    db["special_users"] = special_users
-    db.close()
-    return f"""<!DOCTYPE html>
-<html>
-<head>
-<title>msgr v2</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-    textarea {{
-        resize: both;
-        width: 100%;
-        height: 27vh;
-    }}
-
-    body {{
-        background-color: #1C2333;
-        color: white;
-    }}
-
-    textarea {{
-        background-color: #1C2333;
-        color: white;
-        border-radius: 10px;
-        border: 1px solid white;
-    }}
-
-    input[type="submit"] {{
-        border-radius: 5px;
-    }}
-</style>
-<script>
-    document.addEventListener("keydown", function(event) {{
-        if (event.ctrlKey && event.key === "s") {{
-            event.preventDefault(); // Prevent the default browser save function
-            document.querySelector('input[type="submit"]').click(); // Trigger the submit button click event
-        }}
-    }});
-</script>
-</head>
-<body>
-<form method="POST" action="/admin/_settings">
-    <input type="hidden" name="admin_key" value="{admin_key}">
-    banned IPs:<br>
-    <textarea name="ips">{ips}</textarea><br>
-    banned UUIDs:<br>
-    <textarea name="uuids">{uuids}</textarea><br>
-    Special users:<br>
-    <textarea name="special_users">{special_users}</textarea><br>
-    <input type="submit" value="Save">
-</form>
-</body>
-</html>"""
+        if username in db:
+            data = db[username]
+            if login_token == data[1]:
+                db.close()
+                db = shelve.open('data/settings')
+                if "banned_ips" in db:
+                    ips = db["banned_ips"]
+                else:
+                    ips = r"""{"ip":'reason'}"""
+                    
+                if "banned_uuids" in db:
+                    uuids = db["banned_uuids"]
+                else:
+                    uuids = r"""{"uuid":'reason'}"""
+            
+                    
+                if "special_users" in db:
+                    special_users = db["special_users"]
+                else:
+                    special_users = r"""{"special_user":'<b>{username}</b> <i>@{time}</i>: {message}<br>\n'}"""
+                db["banned_ips"] = ips
+                db["banned_uuids"] = uuids
+                db["special_users"] = special_users
+                db.close()
+                return f"""<!DOCTYPE html>
+            <html>
+            <head>
+            <title>msgr v2</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <style>
+                textarea {{
+                    resize: both;
+                    width: 100%;
+                    height: 27vh;
+                }}
+            
+                body {{
+                    background-color: #1C2333;
+                    color: white;
+                }}
+            
+                textarea {{
+                    background-color: #1C2333;
+                    color: white;
+                    border-radius: 10px;
+                    border: 1px solid white;
+                }}
+            
+                input[type="submit"] {{
+                    border-radius: 5px;
+                }}
+            </style>
+            <script>
+                document.addEventListener("keydown", function(event) {{
+                    if (event.ctrlKey && event.key === "s") {{
+                        event.preventDefault(); // Prevent the default browser save function
+                        document.querySelector('input[type="submit"]').click(); // Trigger the submit button click event
+                    }}
+                }});
+            </script>
+            </head>
+            <body>
+            <form method="POST" action="/admin/_settings">
+                <input type="hidden" name="admin_key" value="{admin_key}">
+                banned IPs:<br>
+                <textarea name="ips">{ips}</textarea><br>
+                banned UUIDs:<br>
+                <textarea name="uuids">{uuids}</textarea><br>
+                Special users:<br>
+                <textarea name="special_users">{special_users}</textarea><br>
+                <input type="submit" value="Save">
+            </form>
+            </body>
+            </html>"""
+            else:
+                db.close()
+                response = make_response("not logged in")
+                response.delete_cookie("admin_un")
+                response.delete_cookie("admin_LOGIN_TOKEN")
+                response.headers["Location"] = "/admin/login"
+                return response, 302
 
 @app.route("/admin/_settings", methods=["POST"])
 def change_settings():
@@ -140,6 +161,92 @@ def change_settings():
     db["special_users"] = special_users
     db.close()
     return redirect(url_for("settings"))
+
+@app.route("/admin/messages")
+def messages():
+    db = shelve.open('data/admindata')
+    username = request.cookies.get('admin_un')
+    login_token = request.cookies.get('admin_LOGIN_TOKEN')
+    if not username or not login_token:
+        response = make_response("not logged in")
+        response.delete_cookie("admin_un")
+        response.delete_cookie("admin_LOGIN_TOKEN")
+        response.headers["Location"] = "/admin/login"
+        return response, 302
+    else:
+        if username in db:
+            data = db[username]
+            if login_token == data[1]:
+                db.close()
+                with open('static/conversations/messages.html', 'r') as file:
+                    messages = file.read()
+                return f"""<!DOCTYPE html>
+            <html>
+            <head>
+            <title>msgr v2</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <style>
+                textarea {{
+                    resize: both;
+                    width: 100%;
+                    height: 90vh;
+                }}
+            
+                body {{
+                    background-color: #1C2333;
+                    color: white;
+                }}
+            
+                textarea {{
+                    background-color: #1C2333;
+                    color: white;
+                    border-radius: 10px;
+                    border: 1px solid white;
+                }}
+            
+                input[type="submit"] {{
+                    border-radius: 5px;
+                }}
+            </style>
+            <script>
+                document.addEventListener("keydown", function(event) {{
+                    if (event.ctrlKey && event.key === "s") {{
+                        event.preventDefault(); // Prevent the default browser save function
+                        document.querySelector('input[type="submit"]').click(); // Trigger the submit button click event
+                    }}
+                }});
+            </script>
+            </head>
+            <body>
+            <form method="POST" action="/admin/_messages">
+                <input type="hidden" name="admin_key" value="{admin_key}">
+                messages:<br>
+                <textarea name="messages">{messages}</textarea><br>
+                <input type="submit" value="Save">
+            </form>
+            </body>
+            </html>"""
+            else:
+                db.close()
+                response = make_response("not logged in")
+                response.delete_cookie("admin_un")
+                response.delete_cookie("admin_LOGIN_TOKEN")
+                response.headers["Location"] = "/admin/login"
+                return response, 302
+
+@app.route("/admin/_messages", methods=["POST"])
+def change_messages():
+    get_admin_key = request.form["admin_key"]
+    if admin_key != get_admin_key:
+        redirect(url_for("admin"))
+    db = shelve.open('data/settings')
+    messages = request.form["messages"]
+    messages = messages.splitlines()
+    messages = "\n".join(messages)
+    with open("static/conversations/messages.html", 'w') as file:
+        file.write(messages + '\n')
+    db.close()
+    return redirect(url_for("messages"))
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -178,6 +285,11 @@ def main():
                 response.delete_cookie("LOGIN_TOKEN")
                 response.delete_cookie("un")
                 return response
+    response = make_response("Something went wrong, clearing cookies")
+    response.delete_cookie("LOGIN_TOKEN")
+    response.delete_cookie("un")
+    response.headers["Location"] = "/"
+    return response, 302
             
 @app.route('/send', methods=["POST"])
 def send():
@@ -390,7 +502,7 @@ def admin():
     return """<title>msgr v2</title><meta name='viewport' content='width=device-width, initial-scale=1'><form method="POST" action="/admin/_login">
     username: <input type="text" name="username" required><br>
     password: <input type="text" name="password" required><br>
-    <input type="submit" value="signup">
+    <input type="submit" value="login">
 </form>"""
 
 @app.route('/admin/_login', methods=['POST'])
@@ -444,7 +556,7 @@ def panel():
                     all_values.append(f'{key} [ Password: "{value[0]}", UUID: "{value[1]}", OG-IP: "{OG_IP}" ] <form method="POST" action="/admin/delete_others"><input type="text" name="admin_key" value="{login_token}" hidden><input name="username" type="text" value="{key}" hidden><input type="submit" value="Delete account"></form>')
                 db.close()
                 accounts = '<br>'.join(all_values)
-                return f"""<html><head><title>msgr v2</title><meta name="viewport" content="width=device-width, initial-scale=1"><style>body {{background-color: #1C2333;color:white;}}input[type="submit"] {{border-radius: 5px;}}button {{border-radius: 5px;}}</style></head><body><a href="/admin/settings"><button>Settings</button></a><br><br>logged in as {username}<form method="POST" action="/logout_admin"><input type="submit" value="Logout"></form>
+                return f"""<html><head><title>msgr v2</title><meta name="viewport" content="width=device-width, initial-scale=1"><style>body {{background-color: #1C2333;color:white;}}input[type="submit"] {{border-radius: 5px;}}button {{border-radius: 5px;}}</style></head><body><a href="/admin/messages"><button>Messages</button></a><br><a href="/admin/settings"><button>Settings</button></a><br><br>logged in as {username}<form method="POST" action="/logout_admin"><input type="submit" value="Logout"></form>
             {accounts}
             </body></html>
             """
@@ -492,7 +604,7 @@ def admin_delete_other_account():
         else:
             response = make_response("account dose not exist")
             response.headers["Location"] = "/admin"
-            return response, 302
-
+            return response, 3020
+    
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=6000)
