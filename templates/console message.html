@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            margin: 0;
+            background-color: #1C2333;
+            overflow-y: scroll;
+            color: white;   
+        }
+        .messages {
+            margin: 5px;
+            color: #F5F9FC;
+            word-break: break-all;
+            padding-bottom: 170px;
+        }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            border: 1px solid #000;
+            background-color: #1C2333;
+            color: #CCD1D9;
+            font-weight: 700;
+        }
+        .send {
+            border-top: 3px solid black;
+            padding-top: 5px;
+        }
+        input[type="submit"] {
+            border-radius: 5px;
+        }
+        .toggle-scroll-bg {
+            border-radius: 5px;
+        }
+        label {
+            color: #F5F9FC;
+        }
+        .account {
+            margin: 0;
+            padding: 0;
+        }
+        .toggle-scroll {
+            margin-top: 5px;
+            cursor: pointer;
+        }
+        a {
+            color:aqua;
+        }
+        .code {
+            display: inline-block;
+            background-color: #1f1f1f;
+            border-radius: 10px;
+            padding-left: 10px;
+            padding-right: 10px;
+            padding-bottom:1px;
+            padding-top:1px;
+            border: 1px solid white;
+        }
+    </style>
+    <title>msgr v2</title><meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div class="messages"></div>
+    <center>
+        <div class="footer">
+            <div class="send">
+                <button class="toggle-scroll-bg"><div class="toggle-scroll" onclick="toggleScroll()" style="padding-bottom:5px;">☑ Enable auto scroll</div></button>
+                <form method="POST" action="/admin/_send" autocomplete="off">
+                    <input type="hidden" value="{{admin_key}}" name="admin_key">
+                    <input type="text" id="message" placeholder="message" required name="message" style="width:98%;">
+                    <br><input type="submit" value="send" style="width:100px;">
+                </form>
+            </div>
+        </div>
+    </center>
+    <script>
+const messagesDiv = document.querySelector('.messages');
+let autoScrollEnabled = true;
+let scrolledUp = false;
+let updatingEnabled = true;
+
+window.addEventListener('DOMContentLoaded', function() {
+    var textbox = document.getElementById('message');
+    textbox.focus();
+});
+
+function updateMessages() {
+    if (!updatingEnabled) return;
+
+    fetch("{{ url_for('static', filename='conversations/messages.html') }}")
+        .then(function(response) {
+            if (response.ok) {
+                return response.text();
+            } else {
+                throw new Error('Error: ' + response.status);
+            }
+        })
+        .then(function(html) {
+            const shouldScroll = (messagesDiv.scrollTop + messagesDiv.clientHeight === messagesDiv.scrollHeight);
+
+            messagesDiv.innerHTML = html;
+
+            if (autoScrollEnabled && shouldScroll) {
+                window.scrollTo(0, document.body.scrollHeight);
+            } else if (scrolledUp && shouldScroll) {
+                scrolledUp = false;
+            }
+        })
+        .catch(function(error) {
+            console.log('Fetch error:', error);
+        });
+}
+
+updateMessages();
+setInterval(updateMessages, 1000);
+setInterval(function() {
+    var links = document.getElementsByTagName('a');
+    for (var i = 0; i < links.length; i++) {
+      var link = links[i];
+      if (link.id !== 'nt') {
+        link.id = 'nt';
+        link.target = '_blank';
+      }
+    }
+  }, 1000);
+
+messagesDiv.addEventListener('scroll', function() {
+    const isAtBottom = messagesDiv.scrollTop + messagesDiv.clientHeight === messagesDiv.scrollHeight;
+
+    if (!isAtBottom) {
+        scrolledUp = true;
+    }
+});
+
+function toggleScroll() {
+    autoScrollEnabled = !autoScrollEnabled;
+    const toggleButton = document.querySelector('.toggle-scroll');
+    toggleButton.textContent = autoScrollEnabled ? '☑ Enable auto scroll' : '☐ Enable auto scroll';
+}
+
+
+document.addEventListener('mouseup', function() {
+    const selectedText = window.getSelection().toString();
+    updatingEnabled = (selectedText === '');
+});
+    </script>
+</body>
+</html>

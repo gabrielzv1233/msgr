@@ -1,3 +1,2 @@
 add chat filter (done) with chat logging
-rate limit messages per uuid
-dont allow the same message twice in a row by the same IP
+make rate limit be per person (if you send a message than another user sends a message than you can send the same message again, this is unwated)

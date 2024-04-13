@@ -7,6 +7,10 @@ import hashlib
 from markupsafe import escape
 import re
 
+app = Flask(__name__)
+
+last_messages = []
+
 def short_uuid():
     # Generate a UUID
     uuid_value = uuid.uuid4()
@@ -24,8 +28,6 @@ def short_uuid():
     short_uuid = hex_hashed_uuid[:6]
 
     return short_uuid
-
-app = Flask(__name__)
 
 filter = {
     "fuck": "f**k",
@@ -53,7 +55,7 @@ print("admin key: " + admin_key + "\n")
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
-@app.route("/admin/settings")
+@app.route("/admin/settings", strict_slashes=False)
 def settings():
     db = shelve.open('data/admindata')
     username = request.cookies.get('admin_un')
@@ -147,7 +149,7 @@ def settings():
                 response.headers["Location"] = "/admin/login"
                 return response, 302
 
-@app.route("/admin/_settings", methods=["POST"])
+@app.route("/admin/_settings", methods=["POST"], strict_slashes=False)
 def change_settings():
     get_admin_key = request.form["admin_key"]
     if admin_key != get_admin_key:
@@ -162,7 +164,7 @@ def change_settings():
     db.close()
     return redirect(url_for("settings"))
 
-@app.route("/admin/messages")
+@app.route("/admin/messages", strict_slashes=False)
 def messages():
     db = shelve.open('data/admindata')
     username = request.cookies.get('admin_un')
@@ -234,7 +236,7 @@ def messages():
                 response.headers["Location"] = "/admin/login"
                 return response, 302
 
-@app.route("/admin/_messages", methods=["POST"])
+@app.route("/admin/_messages", methods=["POST"], strict_slashes=False)
 def change_messages():
     get_admin_key = request.form["admin_key"]
     if admin_key != get_admin_key:
@@ -261,6 +263,56 @@ def page_not_found(e):
 <a href="/">main page</a>&emsp;<a href="/login">login</a>&emsp;<a href="/signup">signup</a>&emsp;
 </body>
 </html>""", 404
+
+
+@app.route("/admin/send", strict_slashes=False)
+def admin_send():
+    db = shelve.open('data/admindata')
+    username = request.cookies.get('admin_un')
+    login_token = request.cookies.get('admin_LOGIN_TOKEN')
+    if not username or not login_token:
+        response = make_response("not logged in")
+        response.delete_cookie("admin_un")
+        response.delete_cookie("admin_LOGIN_TOKEN")
+        response.headers["Location"] = "/admin/login"
+        return response, 302
+    else:
+        if username in db:
+            data = db[username]
+            if login_token == data[1]:
+                db.close()
+                return render_template("console message.html", admin_key=admin_key)
+            else:
+                db.close()
+                response = make_response("not logged in")
+                response.delete_cookie("admin_un")
+                response.delete_cookie("admin_LOGIN_TOKEN")
+                response.headers["Location"] = "/admin/login"
+                return response, 302
+            
+@app.route("/admin/_send", methods=["POST"], strict_slashes=False)
+def send_admin():
+    time = datetime.datetime.now().strftime("%H:%M")
+    get_admin_key = request.form["admin_key"]
+    if admin_key != get_admin_key:
+        redirect(url_for("admin"))
+    message = request.form["message"]
+    with open('static/conversations/messages.html', 'a') as file:
+        message = message.replace("<", "&#60;")
+        message = message.replace(">", "&#62;")
+        message = message.replace('"', "&#34;")
+        message = message.replace("'", "&#39;")
+        if message == "" or not message:
+            return redirect(url_for('main'))
+        message = re.sub(r'!(https?://\S+)', r'<a href="\1">\1</a>', message)
+        message = re.sub(r'\[(.*?)\]\((.*?)\)', r'<a href="\2">\1</a>', message)
+        message = re.sub(r"___(.*?)___", r'<u>\1</u>', message)
+        message = re.sub(r"~~(.*?)~~", r'<s>\1</s>', message)
+        message = re.sub(r"```(.*?)```", r'<div class="code">\1</div>', message)
+        message = re.sub(r"\*\*(.*?)\*\*", r'<b>\1</b>', message)
+        message = re.sub(r"\*(.*?)\*", r'<i>\1</i>', message)
+        file.write(f"""<b style="color:cyan;">[</b><b style="color:red;">CONSOLE</b><b style="color:cyan;">]</b></b> <i>@{time}</i>: {message}<br>\n""")
+    return redirect(url_for("admin_send"))
 
 @app.route("/")
 def main():
@@ -291,7 +343,7 @@ def main():
     response.headers["Location"] = "/"
     return response, 302
             
-@app.route('/send', methods=["POST"])
+@app.route('/send', methods=["POST"], strict_slashes=False)
 def send():
     db = shelve.open('data/settings')
     banned_ips = eval(db["banned_ips"])
@@ -349,13 +401,17 @@ def send():
                                 message = re.sub(r"\*\*(.*?)\*\*", r'<b>\1</b>', message)
                                 message = re.sub(r"\*(.*?)\*", r'<i>\1</i>', message)
                                 key = data[1]
-                                print(key)
                                 if data[1] in special_users:
                                     format = special_users[key]
                                     format = format.format(username=escape(username), time=time, message=message)
                                 else:
                                     format = f'<b>{escape(username)}</b> <i>@{time}</i>: {message}<br>\n'
+                                if last_messages and key.lower() == last_messages[0][0].lower() and message.lower() == last_messages[0][1].lower():
+                                    response = make_response("<title>msgr v2</title><meta name='viewport' content='width=device-width, initial-scale=1'>Cannot send the same message twice")
+                                    response.headers["Location"] = "/"
+                                    return response, 302
                                 file.write(format)
+                                last_messages.insert(0, (key, message))
                                 print(f'Message sent by {username} at IP {client_ip}')
                             return redirect(url_for('main'))
                         else:
@@ -365,7 +421,7 @@ def send():
                             response.delete_cookie("un")
                             return response
     
-@app.route("/delete_account", methods=["POST"])
+@app.route("/delete_account", methods=["POST"], strict_slashes=False)
 def delete_account():
     db = shelve.open('data/userdata')
     username = request.cookies.get('un')
@@ -387,7 +443,7 @@ def delete_account():
                 db.close()
                 return "<title>msgr v2</title><meta name='viewport' content='width=device-width, initial-scale=1'>Unable to delete account: not logged in"
 
-@app.route('/logout', methods=["POST"])
+@app.route('/logout', methods=["POST"], strict_slashes=False)
 def logout():
     response = make_response("Logged out")
     response.delete_cookie("LOGIN_TOKEN")
@@ -395,7 +451,7 @@ def logout():
     response.headers["Location"] = "/"
     return response, 302
 
-@app.route('/li', methods=['POST'])
+@app.route('/li', methods=['POST'], strict_slashes=False)
 def li():
     settings = shelve.open('data/settings')
     banned_ips = settings["banned_ips"]
@@ -403,8 +459,6 @@ def li():
     db = shelve.open('data/userdata')
     username = str(request.form.get('username'))
     password = str(request.form.get('password')) 
-    print(username)
-    print(password)
     client_ip = request.headers.get('X-Forwarded-For')
     if client_ip in banned_ips:
         return f"<title>msgr v2</title><meta name='viewport' content='width=device-width, initial-scale=1'>You have been banned<br>Reason:<br>{banned_ips[client_ip]}"
@@ -425,7 +479,7 @@ def li():
         db.close()
         return "login info incorrect"
 
-@app.route('/si', methods=['POST'])
+@app.route('/si', methods=['POST'], strict_slashes=False)
 def si():
     settings = shelve.open('data/settings')
     banned_ips = settings["banned_ips"]
@@ -449,7 +503,7 @@ def si():
             response.headers["Location"] = "/"
             return response, 302
  
-@app.route("/login")
+@app.route("/login", strict_slashes=False)
 def login():
     return """<title>msgr v2</title><meta name='viewport' content='width=device-width, initial-scale=1'><form method="POST" action="/li">
     username: <input type="text" name="username" required maxlength="22"><br>
@@ -457,7 +511,7 @@ def login():
     <input type="submit" value="login">
 </form>"""
 
-@app.route("/signup")
+@app.route("/signup", strict_slashes=False)
 def signup():
     return """<title>msgr v2</title><meta name='viewport' content='width=device-width, initial-scale=1'><form method="POST" action="/si" autocomplete="off">
     username: <input type="text" name="username" required maxlength="22"><br>
@@ -465,7 +519,7 @@ def signup():
     <input type="submit" value="signup">
 </form>"""
 
-@app.route("/admin/signup")
+@app.route("/admin/signup", strict_slashes=False)
 def signup_form():
     return """<form method="POST" action="/admin/_signup">
     admin key: <input type="text" name="admin_key" required><br>
@@ -474,14 +528,12 @@ def signup_form():
     <input type="submit" value="signup">
 </form>"""
 
-@app.route('/admin/_signup', methods=['POST'])
+@app.route('/admin/_signup', methods=['POST'], strict_slashes=False)
 def admmin_signup():
     db = shelve.open('data/admindata')
     admin_login_key = str(request.form.get('admin_key'))
     username = str(request.form.get('username'))
     data = [str(request.form.get('password')), str(uuid.uuid4())]
-    print(username)
-    print(data[0])
     if not admin_login_key == admin_key:
         return "Admin key incorrect"
     if username in db:
@@ -497,7 +549,7 @@ def admmin_signup():
         db.close()
         return response, 302
     
-@app.route("/admin/login")
+@app.route("/admin/login", strict_slashes=False)
 def admin():
     return """<title>msgr v2</title><meta name='viewport' content='width=device-width, initial-scale=1'><form method="POST" action="/admin/_login">
     username: <input type="text" name="username" required><br>
@@ -505,13 +557,11 @@ def admin():
     <input type="submit" value="login">
 </form>"""
 
-@app.route('/admin/_login', methods=['POST'])
+@app.route('/admin/_login', methods=['POST'], strict_slashes=False)
 def admin_login():
     db = shelve.open('data/admindata')
     username = str(request.form.get('username'))
     password = str(request.form.get('password')) 
-    print(username)
-    print(password)
     if username in db:
         data = db[username]
         userpass = data[0]
@@ -529,7 +579,7 @@ def admin_login():
         db.close()
         return "login info incorrect"
     
-@app.route("/admin")
+@app.route("/admin", strict_slashes=False)
 def panel():
     db = shelve.open('data/admindata')
     username = request.cookies.get('admin_un')
@@ -556,7 +606,7 @@ def panel():
                     all_values.append(f'{key} [ Password: "{value[0]}", UUID: "{value[1]}", OG-IP: "{OG_IP}" ] <form method="POST" action="/admin/delete_others"><input type="text" name="admin_key" value="{login_token}" hidden><input name="username" type="text" value="{key}" hidden><input type="submit" value="Delete account"></form>')
                 db.close()
                 accounts = '<br>'.join(all_values)
-                return f"""<html><head><title>msgr v2</title><meta name="viewport" content="width=device-width, initial-scale=1"><style>body {{background-color: #1C2333;color:white;}}input[type="submit"] {{border-radius: 5px;}}button {{border-radius: 5px;}}</style></head><body><a href="/admin/messages"><button>Messages</button></a><br><a href="/admin/settings"><button>Settings</button></a><br><br>logged in as {username}<form method="POST" action="/logout_admin"><input type="submit" value="Logout"></form>
+                return f"""<html><head><title>msgr v2</title><meta name="viewport" content="width=device-width, initial-scale=1"><style>body {{background-color: #1C2333;color:white;}}input[type="submit"] {{border-radius: 5px;}}button {{border-radius: 5px;}}</style></head><body><a href="/admin/send"><button>Send from console</button></a><br><a href="/admin/messages"><button>Messages</button></a><br><a href="/admin/settings"><button>Settings</button></a><br><br>logged in as {username}<form method="POST" action="/logout_admin"><input type="submit" value="Logout"></form>
             {accounts}
             </body></html>
             """
@@ -568,7 +618,7 @@ def panel():
                 response.headers["Location"] = "/admin/login"
                 return response, 302
 
-@app.route('/logout_admin', methods=["POST"])
+@app.route('/logout_admin', methods=["POST"], strict_slashes=False)
 def admin_logout():
     response = make_response("Logged out")
     response.delete_cookie("admin_LOGIN_TOKEN")
@@ -576,7 +626,7 @@ def admin_logout():
     response.headers["Location"] = "/admin/login"
     return response, 302
 
-@app.route("/admin/delete_others", methods=["POST"])
+@app.route("/admin/delete_others", methods=["POST"], strict_slashes=False)
 def admin_delete_other_account():
     db = shelve.open('data/userdata')
     username = request.form.get('username')
