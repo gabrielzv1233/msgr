@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="description" content="A free messaging app compleate with accounts and special syling for your message">
+    <meta name="author" content="Gabrielzv1233">
     <style>
         body {
             margin: 0;
@@ -13,7 +15,11 @@
             margin: 5px;
             color: #F5F9FC;
             word-break: break-all;
-            padding-bottom: 170px;
+        }
+        #message {
+            width: 98%;
+            resize: none;
+            overflow-y: hidden;
         }
         .footer {
             position: fixed;
@@ -21,7 +27,7 @@
             width: 100%;
             border: 1px solid #000;
             background-color: #1C2333;
-            color: #CCD1D9;
+            color: white;
             font-weight: 700;
         }
         .send {
@@ -67,10 +73,12 @@
         <div class="footer">
             <div class="send">
                 <button class="toggle-scroll-bg"><div class="toggle-scroll" onclick="toggleScroll()" style="padding-bottom:5px;">☑ Enable auto scroll</div></button>
-                <form method="POST" action="/send" autocomplete="off">
-                    <div style="color:white;">Username: {{username}}</div>
-                    <input type="text" id="message" placeholder="message" maxlength="600" required name="message" style="width:98%;">
-                    <br>characters left: <b class="char-left"></b>
+                <form method="POST" action="/send" autocomplete="off" id="send">
+                    <div>Username: {{username}}</div>
+                    <div class="message-box">
+                        <textarea id="message" placeholder="Type your message" rows="1" maxlength="600" required name="message"></textarea>
+                      </div>
+                    characters left: <b class="char-left"></b>
                     <br><input type="submit" value="send" style="width:100px;">
                 </form>
             </div>
@@ -86,6 +94,21 @@
         </div>
     </center>
     <script>
+window.addEventListener('DOMContentLoaded', function() {
+    adjustMessagesPadding();
+    var textbox = document.getElementById('message');
+    textbox.focus();
+});
+setInterval(adjustMessagesPadding, 500);
+window.addEventListener('resize', adjustMessagesPadding);
+
+function adjustMessagesPadding() {
+    const messagesDiv = document.querySelector('.messages');
+    const footerDiv = document.querySelector('.footer');
+    const footerHeight = footerDiv.offsetHeight;
+    const paddingValue = footerHeight + 'px';
+    messagesDiv.style.paddingBottom = paddingValue;
+}
 // Get the message input element and char left element
 const messageInput = document.getElementById('message');
 const charLeftElement = document.querySelector('.char-left');
@@ -115,80 +138,134 @@ function updateCharCount() {
 }
 
 // Initial update on page load
+
 updateCharCount();
+messageInput.addEventListener('input', function() {
+    adjustTextBoxHeight();
+  });
+  
+  messageInput.addEventListener('focus', function() {
+    adjustTextBoxHeight();
+  });
+  
+  messageInput.addEventListener('blur', function() {
+    resetTextBoxHeight();
+  });
+  
+  function adjustTextBoxHeight() {
+    const lineHeight = parseInt(getComputedStyle(messageInput).lineHeight);
+    const maxLines = 5;
+    const lines = messageInput.value.split('\n').length;
+    const newLines = Math.min(lines, maxLines);
+  
+    messageInput.rows = newLines;
+    messageInput.style.height = lineHeight * newLines + 'px';
+  }
+  
+  function resetTextBoxHeight() {
+    messageInput.rows = 1;
+    messageInput.style.height = '';
+  }
 
 // Event listener for input event on the message input
 messageInput.addEventListener('input', updateCharCount);
-
         const messagesDiv = document.querySelector('.messages');
-let autoScrollEnabled = true;
-let scrolledUp = false;
-let updatingEnabled = true;
-
-window.addEventListener('DOMContentLoaded', function() {
-    var textbox = document.getElementById('message');
-    textbox.focus();
-});
-
-function updateMessages() {
-    if (!updatingEnabled) return;
-
-    fetch("{{ url_for('static', filename='conversations/messages.html') }}")
-        .then(function(response) {
-            if (response.ok) {
-                return response.text();
-            } else {
-                throw new Error('Error: ' + response.status);
-            }
-        })
-        .then(function(html) {
-            const shouldScroll = (messagesDiv.scrollTop + messagesDiv.clientHeight === messagesDiv.scrollHeight);
-
-            messagesDiv.innerHTML = html;
-
-            if (autoScrollEnabled && shouldScroll) {
-                window.scrollTo(0, document.body.scrollHeight);
-            } else if (scrolledUp && shouldScroll) {
-                scrolledUp = false;
-            }
-        })
-        .catch(function(error) {
-            console.log('Fetch error:', error);
+        let autoScrollEnabled = true;
+        let scrolledUp = false;
+        let updatingEnabled = true;
+        let messageCount = 0;
+        
+        window.addEventListener('DOMContentLoaded', function() {
+            var textbox = document.getElementById('message');
+            textbox.focus();
         });
-}
+        
+        function updateMessages() {
+            if (!updatingEnabled) return;
+        
+            fetch("{{ url_for('static', filename='conversations/messages.html') }}")
+                .then(function(response) {
+                    if (response.ok) {
+                        return response.text();
+                    } else {
+                        throw new Error('Error: ' + response.status);
+                    }
+                })
+                .then(function(html) {
+                    const shouldScroll = (messagesDiv.scrollTop + messagesDiv.clientHeight === messagesDiv.scrollHeight);
+        
+                    messagesDiv.innerHTML = html;
+        
+                    // Load only the last 20 messages
+                    const allMessages = messagesDiv.querySelectorAll('.message');
+                    const totalMessages = allMessages.length;
+        
+                    if (totalMessages > messageCount) {
+                        const startIndex = Math.max(totalMessages - 20, 0);
+                        const visibleMessages = Array.from(allMessages).slice(startIndex, totalMessages);
+                        messagesDiv.innerHTML = '';
+                        visibleMessages.forEach(function(message) {
+                            messagesDiv.appendChild(message);
+                        });
+                        messageCount = totalMessages;
+                    }
+        
+                    if (autoScrollEnabled && shouldScroll) {
+                        window.scrollTo(0, document.body.scrollHeight);
+                    } else if (scrolledUp && shouldScroll) {
+                        scrolledUp = false;
+                    }
+                })
+                .catch(function(error) {
+                    console.log('Fetch error:', error);
+                });
+        }
+        
+        updateMessages();
+        setInterval(updateMessages, 1000);
+        setInterval(function() {
+            var links = document.getElementsByTagName('a');
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i];
+                if (link.id !== 'nt') {
+                    link.id = 'nt';
+                    link.target = '_blank';
+                }
+            }
+        }, 1000);
+        
+        messagesDiv.addEventListener('scroll', function() {
+            const isAtBottom = messagesDiv.scrollTop + messagesDiv.clientHeight === messagesDiv.scrollHeight;
+        
+            if (!isAtBottom) {
+                scrolledUp = true;
+            }
+        
+            // Load more messages when scrolled to the last 10
+            if (isAtBottom && messagesDiv.scrollTop > messagesDiv.scrollHeight - messagesDiv.clientHeight - 10) {
+                updateMessages();
+            }
+        });
+        
+        function toggleScroll() {
+            autoScrollEnabled = !autoScrollEnabled;
+            const toggleButton = document.querySelector('.toggle-scroll');
+            toggleButton.textContent = autoScrollEnabled ? '☑ Enable auto scroll' : '☐ Enable auto scroll';
+        }
+        
+        document.addEventListener('mouseup', function() {
+            const selectedText = window.getSelection().toString();
+            updatingEnabled = (selectedText === '');
+        });
+        
+        const form = document.getElementById('send'); // Replace 'your-form-id' with the actual ID of your form
 
-updateMessages();
-setInterval(updateMessages, 1000);
-setInterval(function() {
-    var links = document.getElementsByTagName('a');
-    for (var i = 0; i < links.length; i++) {
-      var link = links[i];
-      if (link.id !== 'nt') {
-        link.id = 'nt';
-        link.target = '_blank';
-      }
-    }
-  }, 1000);
-
-messagesDiv.addEventListener('scroll', function() {
-    const isAtBottom = messagesDiv.scrollTop + messagesDiv.clientHeight === messagesDiv.scrollHeight;
-
-    if (!isAtBottom) {
-        scrolledUp = true;
-    }
-});
-
-function toggleScroll() {
-    autoScrollEnabled = !autoScrollEnabled;
-    const toggleButton = document.querySelector('.toggle-scroll');
-    toggleButton.textContent = autoScrollEnabled ? '☑ Enable auto scroll' : '☐ Enable auto scroll';
-}
-
-
-document.addEventListener('mouseup', function() {
-    const selectedText = window.getSelection().toString();
-    updatingEnabled = (selectedText === '');
-});
+        messageInput.addEventListener('keydown', function(event) {
+          if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            form.submit();
+          }
+        });
     </script>
 </body>
 </html>

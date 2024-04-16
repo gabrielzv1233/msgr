@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="description" content="A free messaging app compleate with accounts and special syling for your message">
+    <meta name="author" content="Gabrielzv1233">
     <style>
         body {
             margin: 0;
@@ -12,7 +14,6 @@
             margin: 5px;
             color: #F5F9FC;
             word-break: break-all;
-            padding-bottom: 45px;
         }
         .footer {
             position: fixed;
@@ -38,6 +39,21 @@
         </div>
     </center>
     <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            adjustMessagesPadding();
+            var textbox = document.getElementById('message');
+            textbox.focus();
+        });
+        setInterval(adjustMessagesPadding, 500);
+        window.addEventListener('resize', adjustMessagesPadding);
+        
+        function adjustMessagesPadding() {
+            const messagesDiv = document.querySelector('.messages');
+            const footerDiv = document.querySelector('.footer');
+            const footerHeight = footerDiv.offsetHeight;
+            const paddingValue = footerHeight + 'px';
+            messagesDiv.style.paddingBottom = paddingValue;
+        }
         const messagesDiv = document.querySelector('.messages');
         let autoScrollEnabled = true;
         let scrolledUp = false;

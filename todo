@@ -1,2 +1,6 @@
 add chat filter (done) with chat logging
 make rate limit be per person (if you send a message than another user sends a message than you can send the same message again, this is unwated)
+split admin message editor in half to see live message view (optional)
+web push notifications - not gonna happen 
+make raw view page just cause
+popup warning for mobile devices

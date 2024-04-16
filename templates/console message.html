@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="description" content="A free messaging app compleate with accounts and special syling for your message">
+    <meta name="author" content="Gabrielzv1233">
     <style>
         body {
             margin: 0;
@@ -13,7 +15,6 @@
             margin: 5px;
             color: #F5F9FC;
             word-break: break-all;
-            padding-bottom: 170px;
         }
         .footer {
             position: fixed;
@@ -59,6 +60,23 @@
             border: 1px solid white;
         }
     </style>
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            adjustMessagesPadding();
+            var textbox = document.getElementById('message');
+            textbox.focus();
+        });
+        
+        window.addEventListener('resize', adjustMessagesPadding);
+        
+        function adjustMessagesPadding() {
+            const messagesDiv = document.querySelector('.messages');
+            const footerDiv = document.querySelector('.footer');
+            const footerHeight = footerDiv.offsetHeight;
+            const paddingValue = footerHeight + 'px';
+            messagesDiv.style.paddingBottom = paddingValue;
+        }
+    </script>
     <title>msgr v2</title><meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
@@ -69,13 +87,31 @@
                 <button class="toggle-scroll-bg"><div class="toggle-scroll" onclick="toggleScroll()" style="padding-bottom:5px;">☑ Enable auto scroll</div></button>
                 <form method="POST" action="/admin/_send" autocomplete="off">
                     <input type="hidden" value="{{admin_key}}" name="admin_key">
-                    <input type="text" id="message" placeholder="message" required name="message" style="width:98%;">
-                    <br><input type="submit" value="send" style="width:100px;">
+                    <div class="message-box">
+                        <textarea id="message" placeholder="Type your message" rows="1" maxlength="600" required name="message" style="width: 98%; resize: none; overflow-y: hidden;"></textarea>
+                      </div>
+                    <input type="submit" value="send" style="width:100px;">
                 </form>
             </div>
         </div>
     </center>
     <script>
+const messageInput = document.getElementById('message'); 
+window.addEventListener('DOMContentLoaded', function() {
+    adjustMessagesPadding();
+    var textbox = document.getElementById('message');
+    textbox.focus();
+});
+setInterval(adjustMessagesPadding, 500);
+window.addEventListener('resize', adjustMessagesPadding);
+
+function adjustMessagesPadding() {
+    const messagesDiv = document.querySelector('.messages');
+    const footerDiv = document.querySelector('.footer');
+    const footerHeight = footerDiv.offsetHeight;
+    const paddingValue = footerHeight + 'px';
+    messagesDiv.style.paddingBottom = paddingValue;
+}
 const messagesDiv = document.querySelector('.messages');
 let autoScrollEnabled = true;
 let scrolledUp = false;
@@ -145,6 +181,39 @@ document.addEventListener('mouseup', function() {
     const selectedText = window.getSelection().toString();
     updatingEnabled = (selectedText === '');
 });
+messageInput.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      form.submit();
+    }
+  });
+    
+    messageInput.addEventListener('input', function() {
+        adjustTextBoxHeight();
+      });
+      
+      messageInput.addEventListener('focus', function() {
+        adjustTextBoxHeight();
+      });
+      
+      messageInput.addEventListener('blur', function() {
+        resetTextBoxHeight();
+      });
+      
+      function adjustTextBoxHeight() {
+        const lineHeight = parseInt(getComputedStyle(messageInput).lineHeight);
+        const maxLines = 5;
+        const lines = messageInput.value.split('\n').length;
+        const newLines = Math.min(lines, maxLines);
+      
+        messageInput.rows = newLines;
+        messageInput.style.height = lineHeight * newLines + 'px';
+      }
+      
+      function resetTextBoxHeight() {
+        messageInput.rows = 1;
+        messageInput.style.height = '';
+      }
     </script>
 </body>
 </html>
