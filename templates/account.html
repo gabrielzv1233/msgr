@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            position: fixed;
+            width: 100%;
+            background-color: #1C2333;
+            font-weight: 700;
+            color: white;
+            text-align: center;
+        }
+        
+    </style>
+    <meta charset="UTF-8">
+    <meta name="description" content="A free messaging app complete with accounts and special styling for your message">
+    <meta name="author" content="Gabrielzv1233">
+</head>
+<body>
+    <div class="account">
+        <form method="POST" action="/logout">
+            logged in as: {{username}} <input type="submit" value="Logout">
+        </form><br>
+        <form method="POST" action="/change_password">
+            <input placeholder="Current password" name="current_password" required><br>
+            <input placeholder="New password"placeholder="Current password" name="new_password" required><br>
+            <input type="submit" value="Change password">
+        </form>
+            <br>
+        <form id="deleteForm" method="POST" action="/delete_account">
+            <input type="checkbox" id="deleteCheckbox" required>Check this and click the button below to delete your account<br>
+            <input type="submit" value="Delete account">
+        </form>
+    </div>
+</body>
+</html>

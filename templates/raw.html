@@ -24,6 +24,7 @@
             background-color: #1C2333;
             color: #CCD1D9;
             font-weight: 700;
+            text-align: center;
         }
         .send {
             border-top: 3px solid black;
@@ -37,10 +38,6 @@
         }
         label {
             color: #F5F9FC;
-        }
-        .account {
-            margin: 0;
-            padding: 0;
         }
         .toggle-scroll {
             margin-top: 5px;
@@ -60,41 +57,11 @@
             border: 1px solid white;
         }
     </style>
-    <script>
-        window.addEventListener('DOMContentLoaded', function() {
-            adjustMessagesPadding();
-            var textbox = document.getElementById('message');
-            textbox.focus();
-        });
-        
-        window.addEventListener('resize', adjustMessagesPadding);
-        
-        function adjustMessagesPadding() {
-            const messagesDiv = document.querySelector('.messages');
-            const footerDiv = document.querySelector('.footer');
-            const footerHeight = footerDiv.offsetHeight;
-            const paddingValue = footerHeight + 'px';
-            messagesDiv.style.paddingBottom = paddingValue;
-        }
-    </script>
     <title>msgr v2</title><meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
     <div class="messages"></div>
-    <center>
-        <div class="footer">
-            <div class="send">
-                <button class="toggle-scroll-bg"><div class="toggle-scroll" onclick="toggleScroll()" style="padding-bottom:5px;">☑ Enable auto scroll</div></button>
-                <form method="POST" action="/admin/_send" autocomplete="off">
-                    <input type="hidden" value="{{admin_key}}" name="admin_key">
-                    <div class="message-box">
-                        <textarea id="message" placeholder="Type your message" rows="1" maxlength="600" required name="message" style="width: 98%; resize: none; overflow-y: hidden;"></textarea>
-                      </div>
-                    <input type="submit" value="send" style="width:100px;">
-                </form>
-            </div>
-        </div>
-    </center>
+    <div class="footer"><button class="toggle-scroll-bg"><div class="toggle-scroll" onclick="toggleScroll()" style="padding-bottom:5px;">☑ Enable auto scroll</div></button></div>
     <script>
 const messageInput = document.getElementById('message'); 
 window.addEventListener('DOMContentLoaded', function() {
@@ -181,39 +148,6 @@ document.addEventListener('mouseup', function() {
     const selectedText = window.getSelection().toString();
     updatingEnabled = (selectedText === '');
 });
-messageInput.addEventListener('keydown', function(event) {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
-      form.submit();
-    }
-  });
-    
-    messageInput.addEventListener('input', function() {
-        adjustTextBoxHeight();
-      });
-      
-      messageInput.addEventListener('focus', function() {
-        adjustTextBoxHeight();
-      });
-      
-      messageInput.addEventListener('blur', function() {
-        resetTextBoxHeight();
-      });
-      
-      function adjustTextBoxHeight() {
-        const lineHeight = parseInt(getComputedStyle(messageInput).lineHeight);
-        const maxLines = 5;
-        const lines = messageInput.value.split('\n').length;
-        const newLines = Math.min(lines, maxLines);
-      
-        messageInput.rows = newLines;
-        messageInput.style.height = lineHeight * newLines + 'px';
-      }
-      
-      function resetTextBoxHeight() {
-        messageInput.rows = 1;
-        messageInput.style.height = '';
-      }
     </script>
 </body>
 </html>

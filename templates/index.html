@@ -40,12 +40,11 @@
         .toggle-scroll-bg {
             border-radius: 5px;
         }
+        button {
+            border-radius: 5px;
+        }
         label {
             color: #F5F9FC;
-        }
-        .account {
-            margin: 0;
-            padding: 0;
         }
         .toggle-scroll {
             margin-top: 5px;
@@ -64,6 +63,9 @@
             padding-top:1px;
             border: 1px solid white;
         }
+        .parent {
+            position: relative;
+          }
     </style>
     <title>msgr v2</title><meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
@@ -71,6 +73,7 @@
     <div class="messages"></div>
     <center>
         <div class="footer">
+            <button style="position: absolute;top: 10px;right: 10px;" onclick="window.open('/account', '_blank');">Open Account</button>
             <div class="send">
                 <button class="toggle-scroll-bg"><div class="toggle-scroll" onclick="toggleScroll()" style="padding-bottom:5px;">☑ Enable auto scroll</div></button>
                 <form method="POST" action="/send" autocomplete="off" id="send">
@@ -80,15 +83,6 @@
                       </div>
                     characters left: <b class="char-left"></b>
                     <br><input type="submit" value="send" style="width:100px;">
-                </form>
-            </div>
-            <div class="account">
-                <form method="POST" action="/logout">
-                    <input type="submit" value="Logout">
-                </form>
-                <form method="POST" action="/delete_account">
-                    <input type="checkbox" required>Check this and click button below to delete account<br>
-                    <input type="submit" value="Delete account">
                 </form>
             </div>
         </div>
@@ -183,7 +177,7 @@ messageInput.addEventListener('input', updateCharCount);
         function updateMessages() {
             if (!updatingEnabled) return;
         
-            fetch("{{ url_for('static', filename='conversations/messages.html') }}")
+            fetch("{{ url_for('static', filename='conversations/' + file) }}")
                 .then(function(response) {
                     if (response.ok) {
                         return response.text();

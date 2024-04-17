@@ -169,6 +169,7 @@ def change_settings():
 
 @app.route("/admin/messages", strict_slashes=False)
 def messages():
+    file = "messages.html"
     db = shelve.open('data/admindata')
     username = request.cookies.get('admin_un')
     login_token = request.cookies.get('admin_LOGIN_TOKEN')
@@ -183,7 +184,7 @@ def messages():
             data = db[username]
             if login_token == data[1]:
                 db.close()
-                with open('static/conversations/messages.html', 'r') as file:
+                with open(f'static/conversations/{file}', 'r') as file:
                     messages = file.read()
                 return f"""<!DOCTYPE html>
             <html>
@@ -244,6 +245,7 @@ def messages():
 
 @app.route("/admin/_messages", methods=["POST"], strict_slashes=False)
 def change_messages():
+    file = "messages.html"
     get_admin_key = request.form["admin_key"]
     if admin_key != get_admin_key:
         redirect(url_for("admin"))
@@ -251,7 +253,7 @@ def change_messages():
     messages = request.form["messages"]
     messages = messages.splitlines()
     messages = "\n".join(messages)
-    with open("static/conversations/messages.html", 'w') as file:
+    with open(f"static/conversations/{file}", 'w') as file:
         file.write(messages + '\n')
     db.close()
     return redirect(url_for("messages"))
@@ -273,6 +275,7 @@ def page_not_found(e):
 
 @app.route("/admin/send", strict_slashes=False)
 def admin_send():
+    file = "messages.html"
     db = shelve.open('data/admindata')
     username = request.cookies.get('admin_un')
     login_token = request.cookies.get('admin_LOGIN_TOKEN')
@@ -287,7 +290,7 @@ def admin_send():
             data = db[username]
             if login_token == data[1]:
                 db.close()
-                return render_template("console message.html", admin_key=admin_key)
+                return render_template("console message.html", admin_key=admin_key, file=file)
             else:
                 db.close()
                 response = make_response("not logged in")
@@ -298,12 +301,13 @@ def admin_send():
             
 @app.route("/admin/_send", methods=["POST"], strict_slashes=False)
 def send_admin():
+    file = "messages.html"
     time = datetime.datetime.now().strftime("%H:%M")
     get_admin_key = request.form["admin_key"]
     if admin_key != get_admin_key:
         redirect(url_for("admin"))
     message = request.form["message"]
-    with open('static/conversations/messages.html', 'a') as file:
+    with open(f'static/conversations/{file}', 'a') as file:
         message = message.replace("<", "&#60;")
         message = message.replace(">", "&#62;")
         message = message.replace('"', "&#34;")
@@ -322,12 +326,13 @@ def send_admin():
 
 @app.route("/")
 def main():
+    file = "messages.html"
     print('Connection: "/" code: 200')
     db = shelve.open('data/userdata')
     username = request.cookies.get('un')
     login_token = request.cookies.get('LOGIN_TOKEN')
     if not username or not login_token:
-        response = make_response(render_template('no_account.html', signup=url_for('signup'), login=url_for('login')))
+        response = make_response(render_template('no_account.html', signup=url_for('signup'), login=url_for('login'), file=file))
         response.delete_cookie("LOGIN_TOKEN")
         response.delete_cookie("un")
         return response
@@ -336,10 +341,10 @@ def main():
             data = db[username]
             if login_token == data[1]:
                 db.close()
-                return render_template('index.html', username=username)
+                return render_template('index.html', username=username, file=file)
             else:
                 db.close()
-                response = make_response(render_template('no_account.html', signup=url_for('signup'), login=url_for('login')))
+                response = make_response(render_template('no_account.html', signup=url_for('signup'), login=url_for('login'), file=file))
                 response.delete_cookie("LOGIN_TOKEN")
                 response.delete_cookie("un")
                 return response
@@ -348,9 +353,70 @@ def main():
     response.delete_cookie("un")
     response.headers["Location"] = "/"
     return response, 302
+
+@app.route("/raw")
+def raw():
+    file = "messages.html"
+    return render_template('raw.html', file=file)
+
+@app.route('/account', strict_slashes=False)
+def account():
+    db = shelve.open('data/userdata')
+    username = request.cookies.get('un')
+    login_token = request.cookies.get('LOGIN_TOKEN')
+    if not username or not login_token:
+        response = make_response("not logged in")
+        response.delete_cookie("LOGIN_TOKEN")
+        response.delete_cookie("un")
+        response.headers["Location"] = "/login"
+        return response
+    else: 
+        if username in db:
+            data = db[username]
+            if login_token == data[1]:
+                db.close()
+                return render_template('account.html', username=username)
+            else:
+                db.close()
+                response = make_response("not logged in")
+                response.delete_cookie("LOGIN_TOKEN")
+                response.delete_cookie("un")
+                response.headers["Location"] = "/login"
+                return response
+    response = make_response("Something went wrong, clearing cookies")
+    response.delete_cookie("LOGIN_TOKEN")
+    response.delete_cookie("un")
+    response.headers["Location"] = "/"
+    return response, 302
             
+@app.route("/change_password", methods=["POST"], strict_slashes=False)
+def change_password():
+    db = shelve.open('data/userdata')
+    current_password = request.form["current_password"]
+    new_password = request.form["new_password"]
+    username = request.cookies.get('un')
+    login_token = request.cookies.get('LOGIN_TOKEN')
+    if not username or not login_token:
+        return "<meta charset='UTF-8'><meta name='description' content='A free messaging app compleate with accounts and special syling for your message'><meta name='author' content='Gabrielzv1233'><title>msgr v2</title><meta name='viewport' content='width=device-width, initial-scale=1'>Unable to delete account: not logged in"
+    else:
+        if username in db:
+            data = db[username]
+            if not current_password == data[0]:
+                return "<meta charset='UTF-8'><meta name='description' content='A free messaging app compleate with accounts and special syling for your message'><meta name='author' content='Gabrielzv1233'><title>msgr v2</title><meta name='viewport' content='width=device-width, initial-scale=1'>Unable to delete account: not logged in"
+            if login_token == data[1]:
+                db[username] = [new_password, data[1], data[2]]
+                db.close()
+                response = make_response("Password changed")
+                
+                response.headers["Location"] = "/account"
+                return response, 302
+            else:
+                db.close()
+                return "<meta charset='UTF-8'><meta name='description' content='A free messaging app compleate with accounts and special syling for your message'><meta name='author' content='Gabrielzv1233'><title>msgr v2</title><meta name='viewport' content='width=device-width, initial-scale=1'>Unable to delete account: not logged in"    
+
 @app.route('/send', methods=["POST"], strict_slashes=False)
 def send():
+    file = "messages.html"
     db = shelve.open('data/settings')
     banned_ips = eval(db["banned_ips"])
     banned_uuids = eval(db["banned_uuids"])
@@ -390,7 +456,7 @@ def send():
                             if data[1] in banned_uuids:
                                 return f"<meta charset='UTF-8'><meta name='description' content='A free messaging app compleate with accounts and special syling for your message'><meta name='author' content='Gabrielzv1233'><title>msgr v2</title><meta name='viewport' content='width=device-width, initial-scale=1'>You have been banned<br>Reason:<br>{banned_uuids[data[1]]}"
                             message = request.form["message"][:600]
-                            with open('static/conversations/messages.html', 'a') as file:
+                            with open(f'static/conversations/{file}', 'a') as file:
                                 message = message.replace("<", "&#60;")
                                 message = message.replace(">", "&#62;")
                                 message = message.replace('"', "&#34;")
@@ -406,6 +472,7 @@ def send():
                                 message = re.sub(r"```(.*?)```", r'<div class="code">\1</div>', message)
                                 message = re.sub(r"\*\*(.*?)\*\*", r'<b>\1</b>', message)
                                 message = re.sub(r"\*(.*?)\*", r'<i>\1</i>', message)
+                                message = message.lstrip('\n')
                                 message = message.rstrip()
                                 message = message.replace("\n", "<br>")
                                 message = re.sub(r"(<br>\s*){6,}", "<br><br><br>", message)
