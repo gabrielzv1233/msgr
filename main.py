@@ -354,7 +354,7 @@ def main():
     response.headers["Location"] = "/"
     return response, 302
 
-@app.route("/raw")
+@app.route("/raw", strict_slashes=False)
 def raw():
     file = "messages.html"
     return render_template('raw.html', file=file)
