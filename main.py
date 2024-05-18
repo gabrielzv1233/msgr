@@ -6,9 +6,24 @@ import logging
 import hashlib
 from markupsafe import escape
 import re
+import os
 
 app = Flask(__name__)
 
+initial_value = {"IP": "reason"}
+os.makedirs('data', exist_ok=True)
+os.makedirs('static/conversations', exist_ok=True)
+with shelve.open('data/settings') as db:
+    if 'banned_ips' not in db:
+        db['banned_ips'] =  r"""{"ip":'reason'}"""
+with shelve.open('data/settings') as db:
+    if 'banned_uuids' not in db:
+        db['banned_uuids'] =  r"""{"uuid":'reason'}"""
+with shelve.open('data/settings') as db:
+    if 'special_users' not in db:
+        db['special_users'] =  r"""{"uuid":'<b>{username}</b> <i>@{time}</i>: {message}<br>\n'}"""
+        
+        
 last_messages = []
 
 def short_uuid():
@@ -86,7 +101,7 @@ def settings():
                 if "special_users" in db:
                     special_users = db["special_users"]
                 else:
-                    special_users = r"""{"special_user":'<b>{username}</b> <i>@{time}</i>: {message}<br>\n'}"""
+                    special_users = r"""{"uuid":'<b>{username}</b> <i>@{time}</i>: {message}<br>\n'}"""
                 db["banned_ips"] = ips
                 db["banned_uuids"] = uuids
                 db["special_users"] = special_users
@@ -220,8 +235,8 @@ def messages():
             <script>
                 document.addEventListener("keydown", function(event) {{
                     if (event.ctrlKey && event.key === "s") {{
-                        event.preventDefault(); // Prevent the default browser save function
-                        document.querySelector('input[type="submit"]').click(); // Trigger the submit button click event
+                        event.preventDefault();
+                        document.querySelector('input[type="submit"]').click();
                     }}
                 }});
             </script>
@@ -341,7 +356,11 @@ def main():
             data = db[username]
             if login_token == data[1]:
                 db.close()
-                return render_template('index.html', username=username, file=file)
+                if request.cookies.get('admin_un') and request.cookies.get('admin_LOGIN_TOKEN'):
+                    adminbutton = """<button style="position: absolute;top: 10px;left: 10px;" onclick="window.open('/admin', '_blank');">admin panel</button>"""
+                else:
+                    adminbutton = ""
+                return render_template('index.html', username=username, adminbutton=adminbutton, file=file)
             else:
                 db.close()
                 response = make_response(render_template('no_account.html', signup=url_for('signup'), login=url_for('login'), file=file))
@@ -519,6 +538,29 @@ def delete_account():
                 db.close()
                 return "<meta charset='UTF-8'><meta name='description' content='A free messaging app compleate with accounts and special syling for your message'><meta name='author' content='Gabrielzv1233'><title>msgr v2</title><meta name='viewport' content='width=device-width, initial-scale=1'>Unable to delete account: not logged in"
 
+@app.route("/admin/delete_account", methods=["POST"], strict_slashes=False)
+def delete_admin_account():
+    db = shelve.open('data/admindata')
+    username = request.cookies.get('admin_un')
+    login_token = request.cookies.get('admin_LOGIN_TOKEN')
+    if not username or not login_token:
+        return "<meta charset='UTF-8'><meta name='description' content='A free messaging app compleate with accounts and special syling for your message'><meta name='author' content='Gabrielzv1233'><title>msgr v2</title><meta name='viewport' content='width=device-width, initial-scale=1'>Unable to delete account: not logged in"
+    else:
+        if username in db:
+            data = db[username]
+            if login_token == data[1]:
+                del db[username]
+                db.close()
+                response = make_response("Deleted account")
+                response.delete_cookie("admin_LOGIN_TOKEN")
+                response.delete_cookie("admin_un")
+                response.headers["Location"] = "/admin/signup"
+                return response, 302
+            else:
+                db.close()
+                return "<meta charset='UTF-8'><meta name='description' content='A free messaging app compleate with accounts and special syling for your message'><meta name='author' content='Gabrielzv1233'><title>msgr v2</title><meta name='viewport' content='width=device-width, initial-scale=1'>Unable to delete account: not logged in"
+
+
 @app.route('/logout', methods=["POST"], strict_slashes=False)
 def logout():
     response = make_response("Logged out")
@@ -682,7 +724,10 @@ def panel():
                     all_values.append(f'{key} [ Password: "{value[0]}", UUID: "{value[1]}", OG-IP: "{OG_IP}" ] <form method="POST" action="/admin/delete_others"><input type="text" name="admin_key" value="{login_token}" hidden><input name="username" type="text" value="{key}" hidden><input type="submit" value="Delete account"></form>')
                 db.close()
                 accounts = '<br>'.join(all_values)
-                return f"""<html><head><meta charset='UTF-8'><meta name='description' content='A free messaging app compleate with accounts and special syling for your message'><meta name='author' content='Gabrielzv1233'><title>msgr v2</title><meta name="viewport" content="width=device-width, initial-scale=1"><style>body {{background-color: #1C2333;color:white;}}input[type="submit"] {{border-radius: 5px;}}button {{border-radius: 5px;}}</style></head><body><a href="/admin/send"><button>Send from console</button></a><br><a href="/admin/messages"><button>Messages</button></a><br><a href="/admin/settings"><button>Settings</button></a><br><br>logged in as {username}<form method="POST" action="/logout_admin"><input type="submit" value="Logout"></form>
+                return f"""<html><head><meta charset='UTF-8'><meta name='description' content='A free messaging app compleate with accounts and special syling for your message'><meta name='author' content='Gabrielzv1233'><title>msgr v2</title><meta name="viewport" content="width=device-width, initial-scale=1"><style>body {{background-color: #1C2333;color:white;}}input[type="submit"] {{border-radius: 5px;}}button {{border-radius: 5px;}}</style></head><body><a href="/admin/send"><button>Send from console</button></a><br><a href="/admin/messages"><button>Messages</button></a><br><a href="/admin/settings"><button>Settings</button></a><br><br>logged in as {username}<form method="POST" action="/logout_admin"><form id="deleteForm" method="POST" action="/delete_account">
+            <input type="submit" value="Logout"></form><form method="POST" action="/admin/delete_account"><input type="checkbox" id="deleteCheckbox" required>Check this and click the button below to delete your account<br>
+            <input type="submit" value="Delete account">
+        </form>
             {accounts}
             </body></html>
             """
@@ -693,6 +738,11 @@ def panel():
                 response.delete_cookie("admin_LOGIN_TOKEN")
                 response.headers["Location"] = "/admin/login"
                 return response, 302
+    response = make_response("not logged in")
+    response.delete_cookie("admin_un")
+    response.delete_cookie("admin_LOGIN_TOKEN")
+    response.headers["Location"] = "/admin/login"
+    return response, 302
 
 @app.route('/logout_admin', methods=["POST"], strict_slashes=False)
 def admin_logout():
