@@ -8,3 +8,5 @@ data/settings.bak
 data/settings.dat
 data/settings.dir
 static/conversations/*
+__pycache__/
+.pythonlibs/

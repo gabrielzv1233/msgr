@@ -7,6 +7,7 @@ import hashlib
 from markupsafe import escape
 import re
 import os
+from better_profanity import profanity
 
 app = Flask(__name__)
 
@@ -21,7 +22,7 @@ with shelve.open('data/settings') as db:
         db['banned_uuids'] =  r"""{"uuid":'reason'}"""
 with shelve.open('data/settings') as db:
     if 'special_users' not in db:
-        db['special_users'] =  r"""{"uuid":'<b>{username}</b> <i>@{time}</i>: {message}<br>\n'}"""
+        db['special_users'] =  r"""{"uuid":'<span data-uuid="{msguuid}"><b>{username}</b> <i>@{time}</i>: {message}</span><br>\n'}"""
         
         
 last_messages = []
@@ -101,7 +102,7 @@ def settings():
                 if "special_users" in db:
                     special_users = db["special_users"]
                 else:
-                    special_users = r"""{"uuid":'<b>{username}</b> <i>@{time}</i>: {message}<br>\n'}"""
+                    special_users = r"""{"uuid":'<span data-uuid="{msguuid}"><b>{username}</b> <i>@{time}</i>: {message}</span><br>\n'}"""
                 db["banned_ips"] = ips
                 db["banned_uuids"] = uuids
                 db["special_users"] = special_users
@@ -320,14 +321,11 @@ def send_admin():
     time = datetime.datetime.now().strftime("%H:%M")
     get_admin_key = request.form["admin_key"]
     if admin_key != get_admin_key:
-        redirect(url_for("admin"))
+        return redirect(url_for("admin"))
     message = request.form["message"]
-    with open(f'static/conversations/{file}', 'a') as file:
-        message = message.replace("<", "&#60;")
-        message = message.replace(">", "&#62;")
-        message = message.replace('"', "&#34;")
-        message = message.replace("'", "&#39;")
-        if message == "" or not message:
+    with open(f'static/conversations/{file}', 'a') as file_obj:
+        message = message.replace("<", "&#60;").replace(">", "&#62;").replace('"', "&#34;").replace("'", "&#39;")
+        if not message:
             return redirect(url_for('main'))
         message = re.sub(r'!(https?://\S+)', r'<a href="\1">\1</a>', message)
         message = re.sub(r'\[(.*?)\]\((.*?)\)', r'<a href="\2">\1</a>', message)
@@ -336,7 +334,8 @@ def send_admin():
         message = re.sub(r"```(.*?)```", r'<div class="code">\1</div>', message)
         message = re.sub(r"\*\*(.*?)\*\*", r'<b>\1</b>', message)
         message = re.sub(r"\*(.*?)\*", r'<i>\1</i>', message)
-        file.write(f"""<b style="color:cyan;">[</b><b style="color:red;">CONSOLE</b><b style="color:cyan;">]</b></b> <i>@{time}</i>: {message}<br>\n""")
+        message_line = f'<span data-uuid="{uuid.uuid4()}"><b style="color:cyan;">[</b><b style="color:red;">CONSOLE</b><b style="color:cyan;">]</b> <i>@{time}</i>: {message}</span><br>\n'
+        file_obj.write(message_line)
     return redirect(url_for("admin_send"))
 
 @app.route("/")
@@ -450,7 +449,7 @@ def send():
         response.delete_cookie("LOGIN_TOKEN")
         response.headers["Location"] = "/login"
         return response, 302
-    else: 
+    else:
         if username in db:
             data = db[username]
             if login_token == data[1]:
@@ -459,31 +458,24 @@ def send():
                 time = datetime.datetime.now().strftime("%H:%M")
                 username = request.cookies.get('un')
                 login_token = request.cookies.get('LOGIN_TOKEN')
-                client_ip = request.headers.get('X-Forwarded-For')
+                client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
                 if client_ip in banned_ips:
-                    return f"<meta charset='UTF-8'><meta name='description' content='A free messaging app complete with accounts and special styling for your message'><meta name='author' content='Gabrielzv1233'><title>msgr v2</title><meta name='viewport' content='width=device-width, initial-scale=1'>You have been banned<br>Reason:<br>{banned_ips[client_ip]}"
+                    return f"<meta charset='UTF-8'>You have been banned<br>Reason:<br>{banned_ips[client_ip]}"
                 if not username or not login_token:
                     response = make_response(render_template('no_account.html', signup=url_for('signup'), login=url_for('login')))
                     response.delete_cookie("LOGIN_TOKEN")
                     response.delete_cookie("un")
                     return response
-                else: 
+                else:
                     if username in db:
                         data = db[username]
                         if login_token == data[1]:
                             db.close()
                             if data[1] in banned_uuids:
-                                return f"<meta charset='UTF-8'><meta name='description' content='A free messaging app complete with accounts and special styling for your message'><meta name='author' content='Gabrielzv1233'><title>msgr v2</title><meta name='viewport' content='width=device-width, initial-scale=1'>You have been banned<br>Reason:<br>{banned_uuids[data[1]]}"
+                                return f"<meta charset='UTF-8'>You have been banned<br>Reason:<br>{banned_uuids[data[1]]}"
                             message = request.form["message"][:600]
-                            with open(f'static/conversations/{file}', 'a') as file:
-                                message = message.replace("<", "&#60;")
-                                message = message.replace(">", "&#62;")
-                                message = message.replace('"', "&#34;")
-                                message = message.replace("'", "&#39;")
-                                for word in filter:
-                                    message = re.sub(re.compile(re.escape(word), re.IGNORECASE), filter[word], message)
-                                if message == "" or not message:
-                                    return redirect(url_for('main'))
+                            with open(f'static/conversations/{file}', 'a') as file_obj:
+                                message = message.replace("<", "&#60;").replace(">", "&#62;").replace('"', "&#34;").replace("'", "&#39;")
                                 message = re.sub(r'!(https?://\S+)', r'<a href="\1">\1</a>', message)
                                 message = re.sub(r'\[(.*?)\]\((.*?)\)', r'<a href="\2">\1</a>', message)
                                 message = re.sub(r"___(.*?)___", r'<u>\1</u>', message)
@@ -491,21 +483,25 @@ def send():
                                 message = re.sub(r"```(.*?)```", r'<div class="code">\1</div>', message)
                                 message = re.sub(r"\*\*(.*?)\*\*", r'<b>\1</b>', message)
                                 message = re.sub(r"\*(.*?)\*", r'<i>\1</i>', message)
-                                message = message.lstrip('\n')
-                                message = message.rstrip()
+                                message = message.lstrip('\n').rstrip()
                                 message = message.replace("\n", "<br>")
                                 message = re.sub(r"(<br>\s*){6,}", "<br><br><br>", message)
+                                for word in filter:
+                                    message = re.sub(re.compile(re.escape(word), re.IGNORECASE), filter[word], message)
+                                if not message:
+                                    return redirect(url_for('main'))
+                                message = profanity.censor(message)
                                 key = data[1]
                                 if data[1] in special_users:
-                                    format = special_users[key]
-                                    format = format.format(username=escape(username), time=time, message=message)
+                                    format_str = special_users[key]
+                                    message_line = format_str.format(msguuid=uuid.uuid4(), username=escape(username), time=time, message=message)
                                 else:
-                                    format = f'<b>{escape(username)}</b> <i>@{time}</i>: {message}<br>\n'
+                                    message_line = f'<span data-uuid="{uuid.uuid4}"><b>{escape(username)}</b> <i>@{time}</i>: {message}</span><br>\n'
                                 if last_messages and key.lower() == last_messages[0][0].lower() and message.lower() == last_messages[0][1].lower():
-                                    response = make_response("<meta charset='UTF-8'><meta name='description' content='A free messaging app complete with accounts and special styling for your message'><meta name='author' content='Gabrielzv1233'><title>msgr v2</title><meta name='viewport' content='width=device-width, initial-scale=1'>Cannot send the same message twice")
+                                    response = make_response("<meta charset='UTF-8'>Cannot send the same message twice")
                                     response.headers["Location"] = "/"
                                     return response, 302
-                                file.write(format)
+                                file_obj.write(message_line)
                                 last_messages.insert(0, (key, message))
                                 print(f'Message sent by {username} at IP {client_ip}')
                             return redirect(url_for('main'))
@@ -515,6 +511,11 @@ def send():
                             response.delete_cookie("LOGIN_TOKEN")
                             response.delete_cookie("un")
                             return response
+    response = make_response("Something went wrong, clearing cookies")
+    response.delete_cookie("LOGIN_TOKEN")
+    response.delete_cookie("un")
+    response.headers["Location"] = "/"
+    return response, 302
     
 @app.route("/delete_account", methods=["POST"], strict_slashes=False)
 def delete_account():
@@ -577,7 +578,7 @@ def li():
     db = shelve.open('data/userdata')
     username = str(request.form.get('username'))
     password = str(request.form.get('password')) 
-    client_ip = request.headers.get('X-Forwarded-For')
+    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
     if client_ip in banned_ips:
         return f"<meta charset='UTF-8'><meta name='description' content='A free messaging app complete with accounts and special styling for your message'><meta name='author' content='Gabrielzv1233'><title>msgr v2</title><meta name='viewport' content='width=device-width, initial-scale=1'>You have been banned<br>Reason:<br>{banned_ips[client_ip]}"
     if username in db:
@@ -602,7 +603,7 @@ def si():
     settings = shelve.open('data/settings')
     banned_ips = settings["banned_ips"]
     settings.close()
-    client_ip = request.headers.get('X-Forwarded-For')
+    client_ip = request.headers.get('X-Forwarded-For', request.remote_addr)
     if client_ip in banned_ips:
         return f"<meta charset='UTF-8'><meta name='description' content='A free messaging app complete with accounts and special styling for your message'><meta name='author' content='Gabrielzv1233'><title>msgr v2</title><meta name='viewport' content='width=device-width, initial-scale=1'>You have been banned<br>Reason:<br>{banned_ips[client_ip]}"
     with shelve.open('data/userdata') as db:
@@ -783,4 +784,4 @@ def admin_delete_other_account():
             return response, 3020
     
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=6000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
